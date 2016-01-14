@@ -11,7 +11,7 @@ import Gridicon from 'components/gridicon';
 import Button from 'components/button';
 import Count from 'components/count';
 
-const SidebarMenu = React.createClass( {
+const ExpandableSidebarMenu = React.createClass( {
 
 	propTypes: {
 		title: React.PropTypes.oneOfType( [ React.PropTypes.string, React.PropTypes.element ] ).isRequired,
@@ -105,7 +105,7 @@ const SidebarMenu = React.createClass( {
 
 	render: function() {
 		const classes = classNames(
-			'sidebar-menu',
+			'sidebar__menu',
 			this.props.className,
 			{
 				'is-add-open': this.state.isAdding,
@@ -125,4 +125,4 @@ const SidebarMenu = React.createClass( {
 	}
 } );
 
-export default SidebarMenu;
+export default ExpandableSidebarMenu;
