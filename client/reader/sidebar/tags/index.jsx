@@ -17,12 +17,12 @@ const stats = require( 'reader/stats' );
 const ReaderSidebarTags = React.createClass( {
 
 	propTypes: {
-		tags: React.PropTypes.array
+		tags: React.PropTypes.array,
+		path: React.PropTypes.string.isRequired
 	},
 
 	followTag: function( tag ) {
-		var subscription;
-		subscription = TagStore.getSubscription( TagActions.slugify( tag ) );
+		let subscription = TagStore.getSubscription( TagActions.slugify( tag ) );
 		if ( subscription ) {
 			this.highlightNewTag( subscription );
 		} else {
@@ -36,7 +36,7 @@ const ReaderSidebarTags = React.createClass( {
 	},
 
 	unfollowTag( event ) {
-		var node = closest( event.target, '[data-tag-slug]', true );
+		const node = closest( event.target, '[data-tag-slug]', true );
 		event.preventDefault();
 		if ( node && node.dataset.tagSlug ) {
 			stats.recordAction( 'unfollowed_topic' );
@@ -52,12 +52,12 @@ const ReaderSidebarTags = React.createClass( {
 		const tagCount = this.props.tags ? this.props.tags.length : 0;
 		return (
 			<ExpandableSidebarMenu
-				expanded={ true }
+				expanded={ false }
 				title={ this.translate( 'Tags' ) }
 				count={ tagCount }
 				addPlaceholder={ this.translate( 'Add any tag' ) }
 				onAddSubmit={ this.followTag }>
-					<ReaderSidebarTagsList tags={ this.props.tags } onUnfollow={ this.unfollowTag } />
+					<ReaderSidebarTagsList { ...this.props } onUnfollow={ this.unfollowTag } />
 			</ExpandableSidebarMenu>
 		);
 	}

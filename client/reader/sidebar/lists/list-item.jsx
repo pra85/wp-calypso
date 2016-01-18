@@ -9,6 +9,7 @@ import classNames from 'classnames';
  * Internal Dependencies
  */
 import config from 'config';
+import ReaderSidebarHelper from '../helper';
 
 const ReaderSidebarListsListItem = React.createClass( {
 
@@ -35,13 +36,12 @@ const ReaderSidebarListsListItem = React.createClass( {
 		];
 
 		const lastPathSegment = last( this.props.path.split( '/' ) );
-		const isCurrentList = false; //lastPathSegment && lastPathSegment.toLowerCase() === list.slug.toLowerCase() && this.pathStartsWithOneOf( [ listRelativeUrl ] );
-		const isActionButtonSelected = false; //this.pathStartsWithOneOf( listManagementUrls );
+		const isCurrentList = lastPathSegment && lastPathSegment.toLowerCase() === list.slug.toLowerCase() && ReaderSidebarHelper.pathStartsWithOneOf( [ listRelativeUrl ], this.props.path );
+		const isActionButtonSelected = ReaderSidebarHelper.pathStartsWithOneOf( listManagementUrls, this.props.path );
 
 		const classes = classNames(
-			//this.itemLinkClassStartsWithOneOf( [ listRelativeUrl ], { 'sidebar__menu-item has-buttons': true } ),
 			{
-				'sidebar-dynamic-menu-list has-buttons': true,
+				'sidebar__menu-item has-buttons': true,
 				selected: isCurrentList || isActionButtonSelected,
 				'is-action-button-selected': isActionButtonSelected
 			}

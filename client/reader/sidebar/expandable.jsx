@@ -22,33 +22,33 @@ const ExpandableSidebarMenu = React.createClass( {
 		onAddSubmit: React.PropTypes.func
 	},
 
-	getInitialState: function() {
+	getInitialState() {
 		return {
 			expanded: this.props.expanded,
 			isAdding: false
 		};
 	},
 
-	getDefaultProps: function() {
+	getDefaultProps() {
 		return {
 			expanded: false
 		};
 	},
 
-	onClick: function() {
+	onClick() {
 		if ( this.props.children ) {
 			this.setState( { expanded: ! this.state.expanded } );
 		}
 	},
 
-	getClickAction: function() {
+	getClickAction() {
 		if ( this.props.disabled ) {
 			return;
 		}
 		return this.onClick;
 	},
 
-	renderContent: function() {
+	renderContent() {
 		return (
 			<ul className="sidebar__menu-list">
 				{ this.props.children }
@@ -56,7 +56,7 @@ const ExpandableSidebarMenu = React.createClass( {
 		);
 	},
 
-	renderHeader: function() {
+	renderHeader() {
 		const headerClasses = classNames( 'sidebar__menu-header' );
 		return (
 			<div className={ headerClasses } onClick={ this.onClick }>
@@ -71,12 +71,12 @@ const ExpandableSidebarMenu = React.createClass( {
 		);
 	},
 
-	toggleAdd: function() {
+	toggleAdd() {
 		this.refs.menuAddInput.focus();
 		this.setState( { isAdding: ! this.state.isAdding } );
 	},
 
-	handleAddKeyDown: function( event ) {
+	handleAddKeyDown( event ) {
 		const inputValue = this.refs.menuAddInput.value;
 		if ( event.keyCode === 13 && inputValue.length > 0 ) {
 			event.preventDefault();
@@ -86,7 +86,7 @@ const ExpandableSidebarMenu = React.createClass( {
 		}
 	},
 
-	renderAdd: function() {
+	renderAdd() {
 		return(
 			<div className="sidebar__menu-add-item">
 				<Button compact className="sidebar__menu-add-button" onClick={ this.toggleAdd }>{ this.translate( 'Add' ) }</Button>
@@ -105,7 +105,7 @@ const ExpandableSidebarMenu = React.createClass( {
 		);
 	},
 
-	render: function() {
+	render() {
 		const classes = classNames(
 			this.props.className,
 			{

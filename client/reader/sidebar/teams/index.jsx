@@ -12,13 +12,14 @@ import ReaderSidebarTeamsListItem from './list-item';
 const ReaderSidebarTeams = React.createClass( {
 
 	propTypes: {
-		teams: React.PropTypes.array
+		teams: React.PropTypes.array,
+		path: React.PropTypes.string.isRequired
 	},
 
 	renderItems() {
 		return map( this.props.teams, function( team ) {
 			return (
-				<ReaderSidebarTeamsListItem key={ team.slug } team={ team } />
+				<ReaderSidebarTeamsListItem key={ team.slug } team={ team } path={ this.props.path } />
 			);
 		}, this );
 	},

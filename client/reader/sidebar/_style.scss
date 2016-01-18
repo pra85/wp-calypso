@@ -23,7 +23,7 @@
 				fill: darken( $gray, 20% );
 			}
 
-			.sidebar__menu-item-label {
+			.sidebar__menu-item-label, .menu-link-text {
 				color: $gray-dark;
 			}
 
@@ -197,6 +197,14 @@
 		}
 	}
 
+	.selected {
+		.sidebar__menu-action {
+			.gridicon {
+				fill: #fff !important;
+			}
+		}
+	}
+
 	.sidebar__menu-action {
 		position: absolute;
 			top: 3px;
@@ -210,6 +218,7 @@
 				left: auto;
 			fill: $gray !important; // this needs to be more specific
 		}
+
 
 		&:hover {
 			cursor: pointer;

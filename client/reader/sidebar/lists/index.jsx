@@ -29,7 +29,7 @@ const ReaderSidebarLists = React.createClass( {
 		const listCount = this.props.lists ? this.props.lists.length : 0;
 		return (
 			<ExpandableSidebarMenu
-				expanded={ true }
+				expanded={ false }
 				title={ this.translate( 'Lists' ) }
 				count={ listCount }
 				addPlaceholder={ this.translate( 'Give your list a name' ) }
