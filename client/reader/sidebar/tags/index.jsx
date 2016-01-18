@@ -8,13 +8,13 @@ import closest from 'component-closest';
  * Internal Dependencies
  */
 import ExpandableSidebarMenu from '../expandable';
-import ReaderSidebarTagList from './list';
+import ReaderSidebarTagsList from './list';
 import TagStore from 'lib/reader-tags/subscriptions';
 import TagActions from 'lib/reader-tags/actions';
 
 const stats = require( 'reader/stats' );
 
-const ReaderSidebarTagSection = React.createClass( {
+const ReaderSidebarTags = React.createClass( {
 
 	propTypes: {
 		tags: React.PropTypes.array
@@ -57,10 +57,10 @@ const ReaderSidebarTagSection = React.createClass( {
 				count={ tagCount }
 				addPlaceholder={ this.translate( 'Add any tag' ) }
 				onAddSubmit={ this.followTag }>
-					<ReaderSidebarTagList tags={ this.props.tags } onUnfollow={ this.unfollowTag } />
+					<ReaderSidebarTagsList tags={ this.props.tags } onUnfollow={ this.unfollowTag } />
 			</ExpandableSidebarMenu>
 		);
 	}
 } );
 
-export default ReaderSidebarTagSection;
+export default ReaderSidebarTags;

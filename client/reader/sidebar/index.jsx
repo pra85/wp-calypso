@@ -3,38 +3,34 @@
  */
 const assign = require( 'lodash/object/assign' ),
 	closest = require( 'component-closest' ),
-	map = require( 'lodash/collection/map' ),
 	some = require( 'lodash/collection/some' ),
 	startsWith = require( 'lodash/string/startsWith' ),
 	React = require( 'react' ),
 	page = require( 'page' ),
 	url = require( 'url' ),
-	last = require( 'lodash/array/last' ),
 	classnames = require( 'classnames' );
 
 /**
  * Internal Dependencies
  */
 const layoutFocus = require( 'lib/layout-focus' ),
-	Tags = require( 'lib/reader-tags/subscriptions' ),
+	ReaderTagsSubscriptionStore = require( 'lib/reader-tags/subscriptions' ),
 	ReaderListsSubscriptionsStore = require( 'lib/reader-lists/subscriptions' ),
 	ReaderListsStore = require( 'lib/reader-lists/lists' ),
-	ReaderListActions = require( 'lib/reader-lists/actions' ),
 	ReaderTeams = require( 'lib/reader-teams' ),
 	Sidebar = require( 'layout/sidebar' ),
 	SidebarActions = require( 'lib/reader-sidebar/actions' ),
 	SidebarHeading = require( 'layout/sidebar/heading' ),
 	SidebarMenu = require( 'layout/sidebar/menu' ),
-	stats = require( 'reader/stats' ),
 	Gridicon = require( 'components/gridicon' ),
 	discoverHelper = require( 'reader/discover/helper' ),
-	config = require( 'config' ),
-	ExpandableSidebarMenu = require( './expandable' );
+	config = require( 'config' );
 
-import ReaderSidebarTagSection from './tags/index';
+import ReaderSidebarTags from './tags';
+import ReaderSidebarLists from './lists';
+import ReaderSidebarTeams from './teams';
 
-module.exports = React.createClass( {
-	displayName: 'ReaderSidebar',
+const ReaderSidebar = React.createClass( {
 
 	itemLinkClass: function( path, additionalClasses ) {
 		var basePathLowerCase = this.props.path.split( '?' )[0].replace( /\/edit$/, '' ).toLowerCase(),
@@ -75,8 +71,8 @@ module.exports = React.createClass( {
 	},
 
 	componentDidMount: function() {
-		Tags.on( 'change', this.updateState );
-		Tags.on( 'add', this.highlightNewTag );
+		ReaderTagsSubscriptionStore.on( 'change', this.updateState );
+		ReaderTagsSubscriptionStore.on( 'add', this.highlightNewTag );
 		ReaderListsStore.on( 'change', this.updateState );
 		ReaderListsSubscriptionsStore.on( 'change', this.updateState );
 		ReaderListsSubscriptionsStore.on( 'create', this.highlightNewList );
@@ -84,8 +80,8 @@ module.exports = React.createClass( {
 	},
 
 	componentWillUnmount: function() {
-		Tags.off( 'change', this.updateState );
-		Tags.off( 'add', this.highlightNewTag );
+		ReaderTagsSubscriptionStore.off( 'change', this.updateState );
+		ReaderTagsSubscriptionStore.off( 'add', this.highlightNewTag );
 		ReaderListsStore.off( 'change', this.updateState );
 		ReaderListsSubscriptionsStore.off( 'change', this.updateState );
 		ReaderListsSubscriptionsStore.off( 'create', this.highlightNewList );
@@ -97,7 +93,7 @@ module.exports = React.createClass( {
 	},
 
 	getStateFromStores: function() {
-		const tags = Tags.get();
+		const tags = ReaderTagsSubscriptionStore.get();
 		const lists = ReaderListsSubscriptionsStore.get();
 		const teams = ReaderTeams.get();
 
@@ -128,79 +124,7 @@ module.exports = React.createClass( {
 		} );
 	},
 
-	createList: function( list ) {
-		stats.recordAction( 'add_list' );
-		stats.recordGaEvent( 'Clicked Create List' );
-		//ReaderListActions.create( ReactDom.findDOMNode( this.refs.addListInput ).value );
-		ReaderListActions.create( list );
-	},
-
-	renderLists: function() {
-		if ( ! this.state.lists ) {
-			return (
-				[ <li key="empty" className="sidebar__menu-empty">{ this.translate( 'Collect sites together by adding a\xa0list.' ) }</li> ]
-			);
-		}
-
-		return map( this.state.lists, function( list ) {
-			const listRelativeUrl = `/read/list/${ list.owner }/${ list.slug }`;
-			let listManageUrl = `https://wordpress.com${ listRelativeUrl }/edit`;
-			let listRel = 'external';
-
-			if ( config.isEnabled( 'reader/list-management' ) ) {
-				listManageUrl = `${ listRelativeUrl }/edit`;
-				listRel = '';
-			}
-
-			const listManagementUrls = [
-				listRelativeUrl + '/tags',
-				listRelativeUrl + '/edit',
-				listRelativeUrl + '/sites',
-			];
-
-			const lastPathSegment = last( this.props.path.split( '/' ) );
-			const isCurrentList = lastPathSegment && lastPathSegment.toLowerCase() === list.slug.toLowerCase() && this.pathStartsWithOneOf( [ listRelativeUrl ] );
-			const isActionButtonSelected = this.pathStartsWithOneOf( listManagementUrls );
-
-			const classes = classnames(
-				this.itemLinkClassStartsWithOneOf( [ listRelativeUrl ], { 'sidebar__menu-item has-buttons': true } ),
-				{
-					'sidebar-dynamic-menu-list has-buttons': true,
-					selected: isCurrentList || isActionButtonSelected,
-					'is-action-button-selected': isActionButtonSelected
-				}
-			);
-
-			return (
-				<li className={ classes } key={ list.ID } >
-					<a className="sidebar__menu-item-label" href={ list.URL }>{ list.title }</a>
-					{ list.is_owner ? <a href={ listManageUrl } rel={ listRel } className="add-new">{ this.translate( 'Manage' ) }</a> : null }
-				</li>
-			);
-		}, this );
-	},
-
-	renderTeams: function() {
-		if ( ! this.state.teams ) {
-			return null;
-		}
-
-		return map( this.state.teams, function( team ) {
-			var teamUri = '/read/' + encodeURIComponent( team.slug );
-			return (
-				<li className={ this.itemLinkClass( teamUri, { 'sidebar-streams__team': true } ) } key={ team.slug }>
-					<a href={ teamUri }>
-						<svg className={ 'menu-link-icon gridicon gridicon-' + team.slug } width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M7.99 1.57C3.75 1.57 1 4.57 1 7.8v0.4c0 3.18 2.75 6.24 6.99 6.24 4.26 0 7.01-3.05 7.01-6.24V7.8C15 4.57 12.25 1.57 7.99 1.57zM12.74 8.13c0 2.32-1.69 4.42-4.74 4.42 -3.05 0-4.73-2.1-4.73-4.42V7.84c0-2.32 1.67-4.38 4.73-4.38 3.06 0 4.75 2.07 4.75 4.39V8.13z" /><path d="M9.47 5.73C9.07 5.47 8.52 5.59 8.26 6L6.21 9.17c-0.26 0.41-0.15 0.95 0.26 1.21 0.4 0.26 0.95 0.14 1.21-0.26l2.05-3.17C9.99 6.53 9.88 5.99 9.47 5.73z" /></svg>
-						<span className="menu-link-text">{ team.title }</span>
-					</a>
-				</li>
-			);
-		}, this );
-	},
-
 	render: function() {
-		const listCount = this.state.lists ? this.state.lists.length : 0;
-
 		return (
 			<Sidebar onClick={ this.handleClick }>
 				<SidebarMenu>
@@ -214,7 +138,7 @@ module.exports = React.createClass( {
 							<a href="/following/edit" className="add-new">{ this.translate( 'Manage' ) }</a>
 						</li>
 
-						{ this.renderTeams() }
+						<ReaderSidebarTeams teams={ this.state.teams } />
 
 						{
 							discoverHelper.isEnabled()
@@ -253,17 +177,11 @@ module.exports = React.createClass( {
 					</ul>
 				</SidebarMenu>
 
-				<ExpandableSidebarMenu
-					expanded={ true }
-					title={ this.translate( 'Lists' ) }
-					count={ listCount }
-					addPlaceholder={ this.translate( 'Give your list a name' ) }
-					onAddSubmit={ this.createList }>
-					{ this.renderLists() }
-				</ExpandableSidebarMenu>
-
-				<ReaderSidebarTagSection tags={ this.state.tags } />
+				<ReaderSidebarLists lists={ this.state.lists } path={ this.props.path } />
+				<ReaderSidebarTags tags={ this.state.tags } />
 			</Sidebar>
 		);
 	}
 } );
+
+export default ReaderSidebar;

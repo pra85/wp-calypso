@@ -7,9 +7,9 @@ import map from 'lodash/collection/map';
 /**
  * Internal Dependencies
  */
-import ReaderSidebarTagListItem from './list-item';
+import ReaderSidebarTagsListItem from './list-item';
 
-const ReaderSidebarTagList = React.createClass( {
+const ReaderSidebarTagsList = React.createClass( {
 
 	propTypes: {
 		tags: React.PropTypes.array,
@@ -19,15 +19,15 @@ const ReaderSidebarTagList = React.createClass( {
 	renderItems() {
 		return map( this.props.tags, function( tag ) {
 			return (
-				<ReaderSidebarTagListItem key={ tag.ID } tag={ tag } onUnfollow={ this.props.onUnfollow } />
+				<ReaderSidebarTagsListItem key={ tag.ID } tag={ tag } onUnfollow={ this.props.onUnfollow } />
 			);
 		}, this );
 	},
 
-	render: function() {
+	render() {
 		if ( ! this.props.tags || this.props.tags.length === 0 ) {
 			return (
-				<li key="empty" className="sidebar__menu-empty">{ this.translate( 'Finds relevant posts by adding a\xa0tag.' ) }</li>
+				<li key="empty" className="sidebar__menu-empty">{ this.translate( 'Find relevant posts by adding a\xa0tag.' ) }</li>
 			);
 		}
 
@@ -37,4 +37,4 @@ const ReaderSidebarTagList = React.createClass( {
 	}
 } );
 
-export default ReaderSidebarTagList;
+export default ReaderSidebarTagsList;

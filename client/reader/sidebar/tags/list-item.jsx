@@ -8,7 +8,7 @@ import React from 'react';
  */
 import Gridicon from 'components/gridicon';
 
-const ReaderSidebarTagListItem = React.createClass( {
+const ReaderSidebarTagsListItem = React.createClass( {
 
 	propTypes: {
 		tag: React.PropTypes.object.isRequired,
@@ -32,5 +32,5 @@ const ReaderSidebarTagListItem = React.createClass( {
 	}
 } );
 
-export default ReaderSidebarTagListItem;
+export default ReaderSidebarTagsListItem;
 
