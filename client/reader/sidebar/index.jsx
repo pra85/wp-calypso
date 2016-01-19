@@ -5,6 +5,8 @@ import React from 'react';
 import closest from 'component-closest';
 import page from 'page';
 import url from 'url';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 
 /**
  * Internal Dependencies
@@ -24,6 +26,7 @@ import ReaderSidebarTags from './tags';
 import ReaderSidebarLists from './lists';
 import ReaderSidebarTeams from './teams';
 import ReaderSidebarHelper from './helper';
+import { toggleReaderSidebarLists, toggleReaderSidebarTags } from 'state/ui/reader/sidebar/actions';
 
 const ReaderSidebar = React.createClass( {
 
@@ -132,11 +135,24 @@ const ReaderSidebar = React.createClass( {
 					</ul>
 				</SidebarMenu>
 
-				<ReaderSidebarLists lists={ this.state.lists } path={ this.props.path } />
-				<ReaderSidebarTags tags={ this.state.tags } path={ this.props.path } />
+				<ReaderSidebarLists lists={ this.state.lists } path={ this.props.path } isOpen={ this.props.isListsOpen } onClick={ this.props.toggleListsVisibility } />
+				<ReaderSidebarTags tags={ this.state.tags } path={ this.props.path } isOpen={ this.props.isTagsOpen } onClick={ this.props.toggleTagsVisibility } />
 			</Sidebar>
 		);
 	}
 } );
 
-export default ReaderSidebar;
+export default connect(
+	( state ) => {
+		return {
+			isListsOpen: state.ui.reader.sidebar.isListsOpen,
+			isTagsOpen: state.ui.reader.sidebar.isTagsOpen
+		};
+	},
+	( dispatch ) => {
+		return bindActionCreators( {
+			toggleListsVisibility: toggleReaderSidebarLists,
+			toggleTagsVisibility: toggleReaderSidebarTags
+		}, dispatch );
+	}
+)( ReaderSidebar );

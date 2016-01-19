@@ -16,24 +16,27 @@ const ReaderSidebarLists = React.createClass( {
 
 	propTypes: {
 		lists: React.PropTypes.array,
-		path: React.PropTypes.string.isRequired
+		path: React.PropTypes.string.isRequired,
+		isOpen: React.PropTypes.bool,
+		onClick: React.PropTypes.func
 	},
 
-	createList: function( list ) {
+	createList( list ) {
 		stats.recordAction( 'add_list' );
 		stats.recordGaEvent( 'Clicked Create List' );
 		ReaderListsActions.create( list );
 	},
 
-	render: function() {
+	render() {
 		const listCount = this.props.lists ? this.props.lists.length : 0;
 		return (
 			<ExpandableSidebarMenu
-				expanded={ false }
+				expanded={ this.props.isOpen }
 				title={ this.translate( 'Lists' ) }
 				count={ listCount }
 				addPlaceholder={ this.translate( 'Give your list a name' ) }
-				onAddSubmit={ this.createList }>
+				onAddSubmit={ this.createList }
+				onClick={ this.props.onClick }>
 					<ReaderSidebarListsList { ...this.props } />
 			</ExpandableSidebarMenu>
 		);

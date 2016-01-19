@@ -24,7 +24,6 @@ const ExpandableSidebarMenu = React.createClass( {
 
 	getInitialState() {
 		return {
-			expanded: this.props.expanded,
 			isAdding: false
 		};
 	},
@@ -36,16 +35,13 @@ const ExpandableSidebarMenu = React.createClass( {
 	},
 
 	onClick() {
-		if ( this.props.children ) {
-			this.setState( { expanded: ! this.state.expanded } );
-		}
-	},
-
-	getClickAction() {
 		if ( this.props.disabled ) {
 			return;
 		}
-		return this.onClick;
+
+		if ( this.props.onClick ) {
+			this.props.onClick();
+		}
 	},
 
 	renderContent() {
@@ -110,7 +106,7 @@ const ExpandableSidebarMenu = React.createClass( {
 			this.props.className,
 			{
 				'is-add-open': this.state.isAdding,
-				'is-toggle-open': !! this.state.expanded,
+				'is-toggle-open': !! this.props.expanded,
 				'is-togglable': true,
 				'is-dynamic': true
 			}
