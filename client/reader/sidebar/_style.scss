@@ -34,8 +34,6 @@
 		}
 	}
 
-	.sidebar-streams {}
-
 	.is-togglable {
 
 		@include breakpoint( "<660px" ) {
@@ -53,7 +51,7 @@
 			.gridicon {
 				top: 10px;
 				left: 20px;
-				height: 16px; // I know, I know...
+				height: 16px; // Smaller than recommended for gridicon, but works here
 				transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 			}
 
@@ -241,11 +239,4 @@
 	.sidebar-dynamic-menu-action_label {
 		display: none;
 	}
-
-	// Sidebar Activity Items
-	// My Comments
-	.sidebar-activity__comments {}
-
-	// My Likes
-	.sidebar-activity__likes {}
 }
