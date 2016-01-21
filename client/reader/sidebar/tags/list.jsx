@@ -14,7 +14,8 @@ const ReaderSidebarTagsList = React.createClass( {
 	propTypes: {
 		tags: React.PropTypes.array,
 		onUnfollow: React.PropTypes.func.isRequired,
-		path: React.PropTypes.string.isRequired
+		path: React.PropTypes.string.isRequired,
+		currentTag: React.PropTypes.string
 	},
 
 	renderItems() {
@@ -24,7 +25,8 @@ const ReaderSidebarTagsList = React.createClass( {
 					key={ tag.ID }
 					tag={ tag }
 					path={ this.props.path }
-					onUnfollow={ this.props.onUnfollow } />
+					onUnfollow={ this.props.onUnfollow }
+					currentTag={ this.props.currentTag } />
 			);
 		}, this );
 	},

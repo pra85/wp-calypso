@@ -13,13 +13,20 @@ const ReaderSidebarListsList = React.createClass( {
 
 	propTypes: {
 		lists: React.PropTypes.array,
-		path: React.PropTypes.string.isRequired
+		path: React.PropTypes.string.isRequired,
+		currentListOwner: React.PropTypes.string,
+		currentListSlug: React.PropTypes.string
 	},
 
 	renderItems() {
 		return map( this.props.lists, function( list ) {
 			return (
-				<ReaderSidebarListsListItem key={ list.ID } list={ list } path={ this.props.path } />
+				<ReaderSidebarListsListItem
+					key={ list.ID }
+					list={ list }
+					path={ this.props.path }
+					currentListOwner={ this.props.currentListOwner }
+					currentListSlug={ this.props.currentListSlug } />
 			);
 		}, this );
 	},

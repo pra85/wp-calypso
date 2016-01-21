@@ -15,7 +15,17 @@ const ReaderSidebarListsListItem = React.createClass( {
 
 	propTypes: {
 		list: React.PropTypes.object.isRequired,
-		path: React.PropTypes.string.isRequired
+		path: React.PropTypes.string.isRequired,
+		currentListOwner: React.PropTypes.string,
+		currentListSlug: React.PropTypes.string
+	},
+
+	componentDidMount() {
+		// Scroll to the current list
+		if ( this.props.list.slug === this.props.currentListSlug && this.props.list.owner === this.props.currentListOwner ) {
+			const node = this.getDOMNode();
+			node.scrollIntoView();
+		}
 	},
 
 	render() {
@@ -46,6 +56,7 @@ const ReaderSidebarListsListItem = React.createClass( {
 				'is-action-button-selected': isActionButtonSelected
 			}
 		);
+
 		return (
 			<li className={ classes } key={ list.ID } >
 				<a className="sidebar__menu-item-label" href={ list.URL }>{ list.title }</a>

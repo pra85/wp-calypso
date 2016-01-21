@@ -7,6 +7,7 @@ import page from 'page';
 import url from 'url';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import startsWith from 'lodash/string/startsWith';
 
 /**
  * Internal Dependencies
@@ -37,6 +38,9 @@ const ReaderSidebar = React.createClass( {
 		ReaderListsSubscriptionsStore.on( 'change', this.updateState );
 		ReaderListsSubscriptionsStore.on( 'create', this.highlightNewList );
 		ReaderTeams.on( 'change', this.updateState );
+
+		// If we're browsing a tag or list, open the sidebar menu
+		this.openExpandableMenuForCurrentTagOrList();
 	},
 
 	componentWillUnmount() {
@@ -91,6 +95,33 @@ const ReaderSidebar = React.createClass( {
 		} );
 	},
 
+	openExpandableMenuForCurrentTagOrList() {
+		const pathParts = this.props.path.split( '/' );
+
+		if ( startsWith( this.props.path, '/tag/' ) ) {
+			const tagSlug = pathParts[2];
+			if ( tagSlug ) {
+				// Open the sidebar
+				if ( ! this.props.isTagsOpen ) {
+					this.props.toggleTagsVisibility();
+					this.setState( { currentTag: tagSlug } );
+				}
+			}
+		}
+
+		if ( startsWith( this.props.path, '/read/list/' ) ) {
+			const listOwner = pathParts[3];
+			const listSlug = pathParts[4];
+			if ( listOwner && listSlug ) {
+				// Open the sidebar
+				if ( ! this.props.isListsOpen ) {
+					this.props.toggleListsVisibility();
+					this.setState( { currentListOwner: listOwner, currentListSlug: listSlug } );
+				}
+			}
+		}
+	},
+
 	render() {
 		return (
 			<Sidebar onClick={ this.handleClick }>
@@ -135,8 +166,20 @@ const ReaderSidebar = React.createClass( {
 					</ul>
 				</SidebarMenu>
 
-				<ReaderSidebarLists lists={ this.state.lists } path={ this.props.path } isOpen={ this.props.isListsOpen } onClick={ this.props.toggleListsVisibility } />
-				<ReaderSidebarTags tags={ this.state.tags } path={ this.props.path } isOpen={ this.props.isTagsOpen } onClick={ this.props.toggleTagsVisibility } />
+				<ReaderSidebarLists
+					lists={ this.state.lists }
+					path={ this.props.path }
+					isOpen={ this.props.isListsOpen }
+					onClick={ this.props.toggleListsVisibility }
+					currentListOwner={ this.state.currentListOwner }
+					currentListSlug={ this.state.currentListSlug } />
+
+				<ReaderSidebarTags
+					tags={ this.state.tags }
+					path={ this.props.path }
+					isOpen={ this.props.isTagsOpen }
+					onClick={ this.props.toggleTagsVisibility }
+					currentTag={ this.state.currentTag } />
 			</Sidebar>
 		);
 	}

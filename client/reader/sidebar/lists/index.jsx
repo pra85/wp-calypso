@@ -18,7 +18,9 @@ const ReaderSidebarLists = React.createClass( {
 		lists: React.PropTypes.array,
 		path: React.PropTypes.string.isRequired,
 		isOpen: React.PropTypes.bool,
-		onClick: React.PropTypes.func
+		onClick: React.PropTypes.func,
+		currentListOwner: React.PropTypes.string,
+		currentListSlug: React.PropTypes.string
 	},
 
 	createList( list ) {

@@ -20,7 +20,8 @@ const ReaderSidebarTags = React.createClass( {
 		tags: React.PropTypes.array,
 		path: React.PropTypes.string.isRequired,
 		isOpen: React.PropTypes.bool,
-		onClick: React.PropTypes.func
+		onClick: React.PropTypes.func,
+		currentTag: React.PropTypes.string
 	},
 
 	followTag: function( tag ) {

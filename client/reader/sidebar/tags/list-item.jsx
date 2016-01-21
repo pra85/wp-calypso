@@ -14,7 +14,16 @@ const ReaderSidebarTagsListItem = React.createClass( {
 	propTypes: {
 		tag: React.PropTypes.object.isRequired,
 		onUnfollow: React.PropTypes.func.isRequired,
-		path: React.PropTypes.string.isRequired
+		path: React.PropTypes.string.isRequired,
+		currentTag: React.PropTypes.string
+	},
+
+	componentDidMount() {
+		// Scroll to the current tag
+		if ( this.props.currentTag && this.props.tag.slug === this.props.currentTag ) {
+			const node = this.getDOMNode();
+			node.scrollIntoView();
+		}
 	},
 
 	render() {
