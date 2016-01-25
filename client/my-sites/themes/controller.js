@@ -9,7 +9,8 @@ var ReactDom = require( 'react-dom' ),
 /**
  * Internal Dependencies
  */
-var ThemesComponent = require( 'my-sites/themes/main' ),
+var SingleSiteComponent = require( 'my-sites/themes/single-site' ),
+	MultiSiteComponent = require( 'my-sites/themes/multi-site' ),
 	analytics = require( 'analytics' ),
 	route = require( 'lib/route' ),
 	i18n = require( 'lib/mixins/i18n' ),
@@ -45,7 +46,7 @@ var controller = {
 		ReactDom.render(
 			React.createElement( ReduxProvider, { store: context.store },
 				React.createElement( Head, { title, tier: tier || 'all' },
-					React.createElement( ThemesComponent, {
+					React.createElement( site_id ? SingleSiteComponent : MultiSiteComponent, {
 						key: site_id,
 						siteId: site_id,
 						tier: tier,
