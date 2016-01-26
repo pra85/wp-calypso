@@ -12,8 +12,7 @@ var React = require( 'react' ),
  */
 var Main = require( 'components/main' ),
 	Action = require( 'state/themes/actions' ),
-	WebPreview = require( 'components/web-preview' ),
-	Button = require( 'components/button' ),
+	ThemePreview = require( './theme-preview' ),
 	ThemesSiteSelectorModal = require( './themes-site-selector-modal' ),
 	ThemesSelection = require( './themes-selection' ),
 	ThemeHelpers = require( 'lib/themes/helpers' ),
@@ -85,29 +84,27 @@ var Themes = React.createClass( {
 		return pick( options, option => ! option.isHidden );
 	},
 
+	onPreviewButtonClick( theme ) {
+		this.setState( { showPreview: false },
+			() => {
+				this.props.dispatch( Action.signup( theme ) );
+			} );
+	},
+
 	render: function() {
 		var { dispatch } = this.props,
 			buttonOptions = this.getButtonOptions();
 
-		const webPreviewButtonText = this.translate( 'Choose this design', {
-			comment: 'when signing up for a WordPress.com account with a selected theme'
-		} );
-
 		return (
 			<Main className="themes">
 				{ this.state.showPreview &&
-					<WebPreview showPreview={ this.state.showPreview }
+					<ThemePreview showPreview={ this.state.showPreview }
+						theme={ this.state.previewingTheme }
 						onClose={ this.togglePreview }
-						previewUrl={ this.state.previewUrl } >
-						<Button primary onClick={ this.setState.bind( this, { showPreview: false },
-							() => {
-								if ( this.props.isLoggedOut ) {
-									dispatch( Action.signup( this.state.previewingTheme ) );
-								} else {
-									buttonOptions.customize.action( this.state.previewingTheme );
-								}
-							} ) } >{ webPreviewButtonText }</Button>
-					</WebPreview>
+						buttonLabel={ this.translate( 'Choose this design', {
+							comment: 'when signing up for a WordPress.com account with a selected theme'
+						} ) }
+						onButtonClick={ this.onPreviewButtonClick } />
 				}
 				<ThemesSelection search={ this.props.search }
 					siteId={ false }

@@ -14,8 +14,7 @@ var Main = require( 'components/main' ),
 	CurrentThemeData = require( 'components/data/current-theme' ),
 	ActivatingTheme = require( 'components/data/activating-theme' ),
 	Action = require( 'state/themes/actions' ),
-	WebPreview = require( 'components/web-preview' ),
-	Button = require( 'components/button' ),
+	ThemePreview = require( './theme-preview' ),
 	CurrentTheme = require( 'my-sites/themes/current-theme' ),
 	SidebarNavigation = require( 'my-sites/sidebar-navigation' ),
 	ThanksModal = require( 'my-sites/themes/thanks-modal' ),
@@ -98,6 +97,13 @@ var Themes = React.createClass( {
 		return pick( options, option => ! option.isHidden );
 	},
 
+	onPreviewButtonClick( theme ) {
+		this.setState( { showPreview: false },
+			() => {
+				this.getButtonOptions().customize.action( theme );
+			} );
+	},
+
 	renderJetpackMessage: function() {
 		var site = this.props.selectedSite;
 		return (
@@ -127,22 +133,17 @@ var Themes = React.createClass( {
 			return <JetpackManageDisabledMessage site={ site } />;
 		}
 
-		const webPreviewButtonText = this.translate( 'Try & Customize', {
-			context: 'when previewing a theme demo, this button opens the Customizer with the previewed theme'
-		} );
-
 		return (
 			<Main className="themes">
 				<SidebarNavigation />
 				{ this.state.showPreview &&
-					<WebPreview showPreview={ this.state.showPreview }
+					<ThemePreview showPreview={ this.state.showPreview }
+						theme={ this.state.previewingTheme }
 						onClose={ this.togglePreview }
-						previewUrl={ this.state.previewUrl } >
-						<Button primary onClick={ this.setState.bind( this, { showPreview: false },
-							() => {
-								buttonOptions.customize.action( this.state.previewingTheme );
-							} ) } >{ webPreviewButtonText }</Button>
-					</WebPreview>
+						buttonLabel={ this.translate( 'Try & Customize', {
+							context: 'when previewing a theme demo, this button opens the Customizer with the previewed theme'
+						} ) }
+						onButtonClick={ this.onPreviewButtonClick } />
 				}
 				<ActivatingTheme siteId={ this.props.selectedSite.ID } >
 					<ThanksModal

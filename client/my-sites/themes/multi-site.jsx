@@ -12,8 +12,7 @@ var React = require( 'react' ),
  */
 var Main = require( 'components/main' ),
 	Action = require( 'state/themes/actions' ),
-	WebPreview = require( 'components/web-preview' ),
-	Button = require( 'components/button' ),
+	ThemePreview = require( './theme-preview' ),
 	SidebarNavigation = require( 'my-sites/sidebar-navigation' ),
 	ThemesSiteSelectorModal = require( './themes-site-selector-modal' ),
 	ThemesSelection = require( './themes-selection' ),
@@ -41,8 +40,7 @@ var Themes = React.createClass( {
 	},
 
 	togglePreview: function( theme ) {
-		const previewUrl = ThemeHelpers.getPreviewUrl( theme );
-		this.setState( { showPreview: ! this.state.showPreview, previewUrl: previewUrl, previewingTheme: theme } );
+		this.setState( { showPreview: ! this.state.showPreview, previewingTheme: theme } );
 	},
 
 	hideSiteSelectorModal: function() {
@@ -95,30 +93,28 @@ var Themes = React.createClass( {
 		return pick( options, option => ! option.isHidden );
 	},
 
+	onPreviewButtonClick( theme ) {
+		this.setState( { showPreview: false },
+			() => {
+				this.getButtonOptions().customize.action( theme );
+			} );
+	},
+
 	render: function() {
 		var { dispatch } = this.props,
 			buttonOptions = this.getButtonOptions();
-
-		const webPreviewButtonText = this.translate( 'Try & Customize', {
-			context: 'when previewing a theme demo, this button opens the Customizer with the previewed theme'
-		} );
 
 		return (
 			<Main className="themes">
 				<SidebarNavigation />
 				{ this.state.showPreview &&
-					<WebPreview showPreview={ this.state.showPreview }
+					<ThemePreview showPreview={ this.state.showPreview }
+						theme={ this.state.previewingTheme }
 						onClose={ this.togglePreview }
-						previewUrl={ this.state.previewUrl } >
-						<Button primary onClick={ this.setState.bind( this, { showPreview: false },
-							() => {
-								if ( this.props.isLoggedOut ) {
-									dispatch( Action.signup( this.state.previewingTheme ) );
-								} else {
-									buttonOptions.customize.action( this.state.previewingTheme );
-								}
-							} ) } >{ webPreviewButtonText }</Button>
-					</WebPreview>
+						buttonLabel={ this.translate( 'Try & Customize', {
+							context: 'when previewing a theme demo, this button opens the Customizer with the previewed theme'
+						} ) }
+						onButtonClick={ this.onPreviewButtonClick } />
 				}
 				<ThemesSelection search={ this.props.search }
 					siteId={ false }
