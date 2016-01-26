@@ -14,15 +14,13 @@ var Main = require( 'components/main' ),
 	Action = require( 'state/themes/actions' ),
 	WebPreview = require( 'components/web-preview' ),
 	Button = require( 'components/button' ),
-	SidebarNavigation = require( 'my-sites/sidebar-navigation' ),
 	ThemesSiteSelectorModal = require( './themes-site-selector-modal' ),
 	ThemesSelection = require( './themes-selection' ),
 	ThemeHelpers = require( 'lib/themes/helpers' ),
 	addTracking = require( './theme-options' ).addTracking,
 	actionLabels = require( './action-labels' ),
-	ThemesListSelectors = require( 'state/themes/themes-list/selectors' ),
-	getCurrentUser = require( 'state/current-user/selectors' ).getCurrentUser,
-	config = require( 'config' );
+	ThemesListSelectors = require( 'lib/themes/themes-list/selectors' ),
+	getCurrentUser = require( 'state/current-user/selectors' ).getCurrentUser;
 
 var Themes = React.createClass( {
 	propTypes: {
@@ -54,43 +52,35 @@ var Themes = React.createClass( {
 	},
 
 	getButtonOptions: function() {
-		const { isLoggedOut } = this.props,
-			buttonOptions = {
-				signup: {
-					getUrl: theme => ThemeHelpers.getSignupUrl( theme ),
-					isHidden: ! isLoggedOut
-				},
-				preview: {
-					action: theme => this.togglePreview( theme ),
-					hideForTheme: theme => theme.active
-				},
-				purchase: {
-					action: theme => this.showSiteSelectorModal( 'purchase', theme ),
-					isHidden: isLoggedOut || ! config.isEnabled( 'upgrades/checkout' ),
-					hideForTheme: theme => theme.active || theme.purchased || ! theme.price
-				},
-				activate: {
-					action: theme => this.showSiteSelectorModal( 'activate', theme ),
-					isHidden: isLoggedOut,
-					hideForTheme: theme => theme.active || ( theme.price && ! theme.purchased )
-				},
-				customize: {
-					action: theme => this.showSiteSelectorModal( 'customize', theme ),
-					isHidden: isLoggedOut,
-					hideForTheme: theme => ! theme.active
-				},
-				separator: {
-					separator: true
-				},
-				details: {
-					getUrl: theme => ThemeHelpers.getDetailsUrl( theme ),
-				},
-				support: {
-					getUrl: theme => ThemeHelpers.getSupportUrl( theme ),
-					// Free themes don't have support docs.
-					hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
-				},
-			};
+		const buttonOptions = {
+			signup: {
+				getUrl: theme => ThemeHelpers.getSignupUrl( theme ),
+			},
+			preview: {
+				action: theme => this.togglePreview( theme ),
+				hideForTheme: theme => theme.active
+			},
+			purchase: {
+				isHidden: true
+			},
+			activate: {
+				isHidden: true,
+			},
+			customize: {
+				isHidden: true
+			},
+			separator: {
+				separator: true
+			},
+			details: {
+				getUrl: theme => ThemeHelpers.getDetailsUrl( theme ),
+			},
+			support: {
+				getUrl: theme => ThemeHelpers.getSupportUrl( theme ),
+				// Free themes don't have support docs.
+				hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
+			},
+		};
 		const options = merge( {}, buttonOptions, actionLabels );
 		return pick( options, option => ! option.isHidden );
 	},
@@ -99,13 +89,12 @@ var Themes = React.createClass( {
 		var { dispatch } = this.props,
 			buttonOptions = this.getButtonOptions();
 
-		const webPreviewButtonText = this.translate( 'Try & Customize', {
-			context: 'when previewing a theme demo, this button opens the Customizer with the previewed theme'
+		const webPreviewButtonText = this.translate( 'Choose this design', {
+			comment: 'when signing up for a WordPress.com account with a selected theme'
 		} );
 
 		return (
 			<Main className="themes">
-				<SidebarNavigation />
 				{ this.state.showPreview &&
 					<WebPreview showPreview={ this.state.showPreview }
 						onClose={ this.togglePreview }
