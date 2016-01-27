@@ -39,6 +39,7 @@ function SitesList() {
 
 	PreferencesActions.fetch();
 	this.recentlySelected = PreferencesStore.get( 'recentSites' ) || [];
+	this.starred = PreferencesStore.get( 'starredSites' ) || [];
 }
 
 /**
@@ -363,6 +364,32 @@ SitesList.prototype.setSelectedSite = function( siteID ) {
  */
 SitesList.prototype.isSelected = function( site ) {
 	return this.selected === site.slug;
+};
+
+/**
+ * Is the site starred?
+ *
+ * @api public
+ */
+SitesList.prototype.isStarred = function( site ) {
+	return this.starred.indexOf( site.ID ) > -1 || site.primary;
+};
+
+SitesList.prototype.toggleStarred = function( siteID ) {
+	if ( ! siteID ) {
+		return;
+	}
+
+	// do not add duplicates
+	if ( this.starred.indexOf( siteID ) === -1 ) {
+		this.starred.unshift( siteID );
+	} else {
+		this.starred.splice( this.starred.indexOf( siteID ), 1 );
+	}
+
+	PreferencesActions.set( 'starredSites', this.starred );
+
+	this.emit( 'change' );
 };
 
 /**
