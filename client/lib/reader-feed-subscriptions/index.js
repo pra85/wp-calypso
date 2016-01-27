@@ -1,7 +1,7 @@
 // Reader Feed Subscription Store
 
 // External dependencies
-import { Map, List, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import debugModule from 'debug';
 
 // Internal dependencies
@@ -25,92 +25,13 @@ const subscriptionTemplate = Map( { // eslint-disable-line new-cap
 	state: stateTypes.SUBSCRIBED
 } );
 
-// const defaultListItems = List(); // eslint-disable-line new-cap
-
-// function getListItems( state, listId ) {
-// 	return state.getIn( [ 'lists', +listId, 'items' ], defaultListItems );
-// }
-
-// function receiveItems( state, data ) {
-// 	// Is it the last page?
-// 	let isLastPage = false;
-// 	if ( data.number === 0 ) {
-// 		isLastPage = true;
-// 	}
-
-// 	// What's the current page?
-// 	const currentPage = +data.page;
-
-// 	// Add new items from response
-// 	let items = getListItems( state, data.list_ID );
-// 	if ( data && data.items ) {
-// 		items = items.concat( fromJS( data.items ) );
-// 	}
-
-// 	const updatedList = fromJS( {
-// 		items,
-// 		currentPage,
-// 		isLastPage
-// 	} );
-
-// 	const updatedLists = state.get( 'lists' ).setIn( [ data.list_ID ], updatedList );
-// 	return state.set( 'lists', updatedLists );
-// };
-
-function addSubscription( state, subscription ) {
-	if ( ! subscription ) {
-		return;
-	}
-
-	// Prepare URL, if we have one
-	if ( subscription.URL ) {
-		subscription.URL = FeedSubscriptionHelper.prepareSiteUrl( subscription.URL );
-	}
-
-	// Is this URL already in the subscription list (in any state, not just SUBSCRIBED)?
-	// const subscriptionKey = chooseBestSubscriptionKey( subscription );
-	// const existingSubscription = FeedSubscriptionStore.getSubscription( subscriptionKey, subscription[ subscriptionKey ], true );
-	// if ( existingSubscription ) {
-	// 	//return updateSubscription( preparedSiteUrl, subscriptionTemplate );
-	// }
-
-	// Otherwise, create a new subscription
-	const newSubscription = subscriptionTemplate.merge( subscription );
-	const subscriptions = state.get( 'subscriptions' ).unshift( newSubscription );
-	const subscriptionCount = state.get( 'subscriptionCount' ) + 1;
-
-	return state.set( 'subscriptions', subscriptions ).set( 'subscriptionCount', subscriptionCount );
-}
-
-function chooseBestSubscriptionKey( subscription ) {
-	// Subscription ID is the most reliable
-	if ( subscription.ID && subscription.ID > 0 ) {
-		return 'ID';
-	}
-
-	return 'URL';
-}
-
 const FeedSubscriptionStore = createReducerStore( ( state, payload ) => {
 	switch ( payload.action.type ) {
 		case actionTypes.FOLLOW_READER_FEED:
 			return addSubscription( state, payload.action.data );
 
-		// case actionTypes.UNFOLLOW_READER_FEED:
-		// 	return receiveUnfollow( state, payload.action );
-
-		// case actionTypes.ACTION_RECEIVE_READER_LIST_ITEMS:
-		// 	return receiveItems( state, payload.action.data );
-
-		// case actionTypes.ACTION_RECEIVE_READER_LIST_ITEMS_ERROR:
-		// 	const errors = state.get( 'errors' );
-		// 	return state.set( 'errors', errors.push( payload.action.error ) );
-
-		// case actionTypes.ACTION_FETCH_READER_LIST_ITEMS:
-		// 	return state.set( 'isFetching', true );
-
-		// case actionTypes.ACTION_FETCH_READER_LIST_ITEMS_COMPLETE:
-		// 	return state.set( 'isFetching', false );
+		case actionTypes.UNFOLLOW_READER_FEED:
+			return removeSubscription( state, payload.action.data );
 	}
 
 	return state;
@@ -153,5 +74,97 @@ FeedSubscriptionStore.getSubscription = function( key, value, includeUnsubscribe
 		return ( subscription.get( key ) === preparedValue && subscription.get( 'state' ) === stateTypes.SUBSCRIBED );
 	} );
 };
+
+FeedSubscriptionStore.getSubscriptionIndex = function( key, value ) {
+	const state = FeedSubscriptionStore.get();
+
+	let preparedValue = value;
+	if ( key === 'URL' ) {
+		preparedValue = FeedSubscriptionHelper.prepareSiteUrl( value );
+	}
+
+	return state.get( 'subscriptions' ).findIndex( function( subscription ) {
+		return ( subscription.get( key ) === preparedValue );
+	} );
+};
+
+function addSubscription( state, subscription ) {
+	if ( ! subscription ) {
+		return;
+	}
+
+	// Is this URL already in the subscription list (in any state, not just SUBSCRIBED)?
+	const subscriptionKey = chooseBestSubscriptionKey( subscription );
+	const existingSubscription = FeedSubscriptionStore.getSubscription( subscriptionKey, subscription[ subscriptionKey ], true );
+	if ( existingSubscription ) {
+		return updateSubscription( state, subscriptionTemplate.merge( subscription ) );
+	}
+
+	// Prepare URL, if we have one
+	if ( subscription.URL ) {
+		subscription.URL = FeedSubscriptionHelper.prepareSiteUrl( subscription.URL );
+	}
+
+	// Otherwise, create a new subscription
+	const newSubscription = subscriptionTemplate.merge( subscription );
+	const subscriptions = state.get( 'subscriptions' ).unshift( newSubscription );
+	const subscriptionCount = state.get( 'subscriptionCount' ) + 1;
+
+	return state.set( 'subscriptions', subscriptions ).set( 'subscriptionCount', subscriptionCount );
+}
+
+// Update an existing subscription with new information
+function updateSubscription( state, newSubscriptionInfo ) {
+	if ( ! newSubscriptionInfo ) {
+		return;
+	}
+
+	// Prepare URL, if we have one
+	if ( newSubscriptionInfo.URL ) {
+		newSubscriptionInfo.URL = FeedSubscriptionHelper.prepareSiteUrl( newSubscriptionInfo.URL );
+	}
+
+	const subscriptionKey = chooseBestSubscriptionKey( newSubscriptionInfo );
+	const existingSubscription = FeedSubscriptionStore.getSubscription( subscriptionKey, newSubscriptionInfo.get( subscriptionKey ) );
+	const existingSubscriptionIndex = FeedSubscriptionStore.getSubscriptionIndex( subscriptionKey, newSubscriptionInfo.get( subscriptionKey ) );
+
+	// If it's a refollow (i.e. the store has handled an unsubscribe for this feed already), add is_refollow flag to the updated subscription object
+	if ( existingSubscription.get( 'state' ) === stateTypes.UNSUBSCRIBED && typeof newSubscriptionInfo.get === 'function' && newSubscriptionInfo.get( 'state' ) === stateTypes.SUBSCRIBED ) {
+		newSubscriptionInfo = newSubscriptionInfo.merge( { is_refollow: true } );
+	}
+
+	const updatedSubscription = existingSubscription.merge( newSubscriptionInfo );
+	const updatedSubscriptionsList = state.get( 'subscriptions' ).setIn( [ existingSubscriptionIndex ], updatedSubscription );
+
+	let subscriptionCount = state.get( 'subscriptionCount' );
+	if ( subscriptionCount > 0 && existingSubscription.get( 'state' ) === stateTypes.UNSUBSCRIBED && updatedSubscription.get( 'state' ) === stateTypes.SUBSCRIBED ) {
+		subscriptionCount++;
+	}
+
+	if ( subscriptionCount > 0 && existingSubscription.get( 'state' ) === stateTypes.SUBSCRIBED && updatedSubscription.get( 'state' ) === stateTypes.UNSUBSCRIBED ) {
+		subscriptionCount--;
+	}
+
+	return state.set( 'subscriptions', updatedSubscriptionsList ).set( 'subscriptionCount', subscriptionCount );
+}
+
+function removeSubscription( state, subscription ) {
+	if ( ! subscription ) {
+		return;
+	}
+
+	const newSubscriptionInfo = fromJS( subscription ).merge( { state: stateTypes.UNSUBSCRIBED } );
+
+	return updateSubscription( state, newSubscriptionInfo );
+}
+
+function chooseBestSubscriptionKey( subscription ) {
+	// Subscription ID is the most reliable
+	if ( subscription.ID && subscription.ID > 0 ) {
+		return 'ID';
+	}
+
+	return 'URL';
+}
 
 export default FeedSubscriptionStore;
