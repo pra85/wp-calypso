@@ -30,7 +30,7 @@ var FeedSubscriptionActions = {
 		Dispatcher.handleViewAction( {
 			type: ActionTypes.FOLLOW_READER_FEED,
 			url: url,
-			data: { url: preparedUrl }
+			data: { URL: preparedUrl }
 		} );
 
 		wpcom.undocumented().followReaderFeed( { url: preparedUrl, meta: meta }, function( error, data ) {
@@ -55,7 +55,7 @@ var FeedSubscriptionActions = {
 		Dispatcher.handleViewAction( {
 			type: ActionTypes.UNFOLLOW_READER_FEED,
 			url: url,
-			data: { url: preparedUrl }
+			data: { URL: preparedUrl }
 		} );
 
 		wpcom.undocumented().unfollowReaderFeed( { url: preparedUrl }, function( error, data ) {

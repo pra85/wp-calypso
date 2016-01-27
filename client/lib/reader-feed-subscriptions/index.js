@@ -1,381 +1,157 @@
 // Reader Feed Subscription Store
 
-//const debug = require( 'debug' )( 'calypso:reader:feed-subs' );
+// External dependencies
+import { Map, List, fromJS } from 'immutable';
+import debugModule from 'debug';
 
-// External Dependencies
-const Dispatcher = require( 'dispatcher' ),
-	reject = require( 'lodash/collection/reject' ),
-	findLast = require( 'lodash/collection/findLast' ),
-	get = require( 'lodash/object/get' ),
-	last = require( 'lodash/array/last' ),
-	Immutable = require( 'immutable' ),
-	clone = require( 'lodash/lang/clone' ),
-	map = require( 'lodash/collection/map' );
+// Internal dependencies
+import { action as actionTypes, state as stateTypes } from './constants';
+import { createReducerStore } from 'lib/store';
+import FeedSubscriptionHelper from './helper';
 
-// Internal Dependencies
-const Emitter = require( 'lib/mixins/emitter' ),
-	ActionTypes = require( './constants' ).action,
-	ErrorTypes = require( './constants' ).error,
-	PostStoreActionTypes = require( 'lib/feed-post-store/constants' ).action,
-	FeedSubscriptionHelper = require( './helper' ),
-	States = require( './constants' ).state;
+const debug = debugModule( 'calypso:reader-feed-subs' ); //eslint-disable-line no-unused-vars
 
-const subscriptionsTemplate = {
-	list: Immutable.List(), // eslint-disable-line new-cap
-	count: 0
-};
+const initialState = fromJS( {
+	subscriptions: [],
+	errors: [],
+	perPage: 50,
+	currentPage: 0,
+	isLastPage: false,
+	isFetching: false,
+	subscriptionCount: 0,
+} );
 
-var subscriptions = clone( subscriptionsTemplate ),
-	errors = [],
-	perPage = 50,
-	currentPage = 0,
-	isLastPage = false,
-	isFetching = false,
-	totalSubscriptions,
-	subscriptionTemplate = Immutable.Map( { // eslint-disable-line new-cap
-		state: States.SUBSCRIBED
-	} );
+const subscriptionTemplate = Map( { // eslint-disable-line new-cap
+	state: stateTypes.SUBSCRIBED
+} );
 
-var FeedSubscriptionStore = {
+// const defaultListItems = List(); // eslint-disable-line new-cap
 
-	// Tentatively add the new subscription
-	// We haven't received confirmation from the API yet, but we want to update the UI
-	receiveFollow: function( action ) {
-		var subscription = { URL: action.data.url };
-		if ( addSubscription( subscription ) ) {
-			FeedSubscriptionStore.emit( 'change' );
-		}
-	},
+// function getListItems( state, listId ) {
+// 	return state.getIn( [ 'lists', +listId, 'items' ], defaultListItems );
+// }
 
-	receiveUnfollow: function( action ) {
-		// Tentatively remove the subscription
-		// We haven't received confirmation from the API yet, but we want to update the UI
-		if ( removeSubscription( { URL: action.data.url } ) ) {
-			FeedSubscriptionStore.emit( 'change' );
-		}
-	},
+// function receiveItems( state, data ) {
+// 	// Is it the last page?
+// 	let isLastPage = false;
+// 	if ( data.number === 0 ) {
+// 		isLastPage = true;
+// 	}
 
-	receiveFollowResponse: function( action ) {
-		var updatedSubscriptionInfo;
+// 	// What's the current page?
+// 	const currentPage = +data.page;
 
-		if ( ! action.error && action.data && action.data.subscribed && ! action.data.info ) {
-			// The follow worked - discard any existing errors for this site
-			FeedSubscriptionStore.removeErrorsForSiteUrl( action.url );
+// 	// Add new items from response
+// 	let items = getListItems( state, data.list_ID );
+// 	if ( data && data.items ) {
+// 		items = items.concat( fromJS( data.items ) );
+// 	}
 
-			// Remove the placeholder subscription and add the full subscription info
-			if ( action.data.subscription ) {
-				updatedSubscriptionInfo = action.data.subscription;
-				updatedSubscriptionInfo.state = States.SUBSCRIBED;
+// 	const updatedList = fromJS( {
+// 		items,
+// 		currentPage,
+// 		isLastPage
+// 	} );
 
-				updateSubscription( action.url, updatedSubscriptionInfo );
+// 	const updatedLists = state.get( 'lists' ).setIn( [ data.list_ID ], updatedList );
+// 	return state.set( 'lists', updatedLists );
+// };
 
-				FeedSubscriptionStore.emit( 'add', this.getSubscription( action.url ) );
-			}
-
-			FeedSubscriptionStore.emit( 'change' );
-
-			return;
-		}
-
-		const errorInfo = get( action, 'data.info' );
-
-		errors.push( {
-			URL: action.url,
-			errorType: ErrorTypes.UNABLE_TO_FOLLOW,
-			info: errorInfo,
-			timestamp: Date.now()
-		} );
-
-		// If the user is already subscribed, we don't want to remove the subscription again
-		if ( errorInfo !== 'already_subscribed' ) {
-			removeSubscription( { URL: action.url } );
-		}
-
-		FeedSubscriptionStore.emit( 'change' );
-	},
-
-	receiveUnfollowResponse: function( action ) {
-		if ( ! action.error && action.data && ! action.data.subscribed ) {
-			// The unfollow worked - discard any existing errors for this site
-			FeedSubscriptionStore.removeErrorsForSiteUrl( action.url );
-			FeedSubscriptionStore.emit( 'remove', action.url );
-			return;
-		}
-
-		errors.push( {
-			URL: action.url,
-			errorType: ErrorTypes.UNABLE_TO_UNFOLLOW,
-			info: get( action, 'data.info' ),
-			timestamp: Date.now()
-		} );
-
-		// There was a problem - add the subscription again
-		if ( addSubscription( { URL: action.url } ) ) {
-			FeedSubscriptionStore.emit( 'change' );
-		}
-	},
-
-	receivePost: function( post ) {
-		if ( ! ( post && post.site_URL ) ) {
-			return;
-		}
-
-		const siteUrl = FeedSubscriptionHelper.prepareSiteUrl( post.site_URL );
-
-		if ( ( post.is_following ) && ! this.getIsFollowingBySiteUrl( post.site_URL ) ) {
-			addSubscription( { URL: siteUrl } );
-		}
-
-		FeedSubscriptionStore.emit( 'change' );
-	},
-
-	receiveSubscriptions: function( data ) {
-		var currentSubscriptions = subscriptions,
-			newSubscriptions,
-			combinedSubscriptions;
-
-		if ( ! data.subscriptions ) {
-			return;
-		}
-
-		// All subscriptions we receive this way will be 'subscribed', so set the state accordingly
-		const subscriptionsWithState = map( data.subscriptions, function( sub ) {
-			return subscriptionTemplate.merge( sub );
-		} );
-
-		newSubscriptions = Immutable.List( subscriptionsWithState ); // eslint-disable-line new-cap
-
-		// Is it the last page?
-		if ( data.number === 0 ) {
-			isLastPage = true;
-		}
-
-		// Is it a new page of results?
-		if ( currentPage > 0 && data.page > currentPage ) {
-			combinedSubscriptions = currentSubscriptions.list.concat( newSubscriptions );
-
-			subscriptions = {
-				count: combinedSubscriptions.size,
-				list: combinedSubscriptions
-			};
-		} else {
-			// Looks like the first results we've received...
-			subscriptions = {
-				count: newSubscriptions.size,
-				list: newSubscriptions
-			};
-		}
-
-		// Set the current page
-		currentPage = data.page;
-
-		// Set total subscriptions for user on the first page only (we keep track of it in the store after that)
-		if ( currentPage === 1 ) {
-			totalSubscriptions = data.total_subscriptions;
-		}
-
-		FeedSubscriptionStore.emit( 'change' );
-	},
-
-	getIsFollowingBySiteUrl: function( siteUrl ) {
-		return !! ( this.getSubscription( siteUrl ) );
-	},
-
-	getSubscriptions: function() {
-		return subscriptions;
-	},
-
-	getSubscription: function( siteUrl ) {
-		const preparedSiteUrl = FeedSubscriptionHelper.prepareSiteUrl( siteUrl );
-		return subscriptions.list.find( function( subscription ) {
-			return ( subscription.get( 'URL' ) === preparedSiteUrl && subscription.get( 'state' ) === States.SUBSCRIBED );
-		} );
-	},
-
-	getTotalSubscriptions: function() {
-		return totalSubscriptions;
-	},
-
-	getLastError: function() {
-		return last( errors );
-	},
-
-	isFetching: function() {
-		return isFetching;
-	},
-
-	setIsFetching: function( val ) {
-		isFetching = val;
-		FeedSubscriptionStore.emitChange();
-	},
-
-	getLastErrorBySiteUrl: function( siteUrl ) {
-		return findLast( errors, { URL: FeedSubscriptionHelper.prepareSiteUrl( siteUrl ) } );
-	},
-
-	removeErrorsForSiteUrl: function( siteUrl ) {
-		var newErrors = reject( errors, { URL: FeedSubscriptionHelper.prepareSiteUrl( siteUrl ) } );
-
-		if ( newErrors.length === errors.length ) {
-			return false;
-		}
-
-		errors = newErrors;
-
-		return true;
-	},
-
-	dismissError: function( error ) {
-		this.removeErrorsForSiteUrl( error.data.URL );
-		FeedSubscriptionStore.emit( 'change' );
-	},
-
-	clearErrors: function() {
-		errors = [];
-	},
-
-	clearSubscriptions: function() {
-		subscriptions = clone( subscriptionsTemplate );
-	},
-
-	isLastPage: function() {
-		return isLastPage;
-	},
-
-	getCurrentPage: function() {
-		return currentPage;
-	},
-
-	getPerPage: function() {
-		return perPage;
-	},
-
-	setPerPage: function( newPerPage ) {
-		perPage = newPerPage;
-	}
-};
-
-function addSubscription( subscription ) {
-	if ( ! subscription || ! subscription.URL ) {
+function addSubscription( state, subscription ) {
+	if ( ! subscription ) {
 		return;
+	}
+
+	// Prepare URL, if we have one
+	if ( subscription.URL ) {
+		subscription.URL = FeedSubscriptionHelper.prepareSiteUrl( subscription.URL );
 	}
 
 	// Is this URL already in the subscription list (in any state, not just SUBSCRIBED)?
-	const preparedSiteUrl = FeedSubscriptionHelper.prepareSiteUrl( subscription.URL );
-	const existingSubscription = subscriptions.list.find( function( sub ) {
-		return sub.get( 'URL' ) === preparedSiteUrl;
-	} );
-
-	if ( existingSubscription ) {
-		return updateSubscription( preparedSiteUrl, subscriptionTemplate );
-	}
+	// const subscriptionKey = chooseBestSubscriptionKey( subscription );
+	// const existingSubscription = FeedSubscriptionStore.getSubscription( subscriptionKey, subscription[ subscriptionKey ], true );
+	// if ( existingSubscription ) {
+	// 	//return updateSubscription( preparedSiteUrl, subscriptionTemplate );
+	// }
 
 	// Otherwise, create a new subscription
-	subscription.URL = preparedSiteUrl;
 	const newSubscription = subscriptionTemplate.merge( subscription );
-	subscriptions.list = subscriptions.list.unshift( newSubscription );
-	subscriptions.count++;
+	const subscriptions = state.get( 'subscriptions' ).unshift( newSubscription );
+	const subscriptionCount = state.get( 'subscriptionCount' ) + 1;
 
-	if ( totalSubscriptions > 0 ) {
-		totalSubscriptions++;
-	}
-
-	return true;
+	return state.set( 'subscriptions', subscriptions ).set( 'subscriptionCount', subscriptionCount );
 }
 
-// Update an existing subscription with new information
-function updateSubscription( url, newSubscriptionInfo ) {
-	if ( ! url || ! newSubscriptionInfo ) {
-		return;
+function chooseBestSubscriptionKey( subscription ) {
+	// Subscription ID is the most reliable
+	if ( subscription.ID && subscription.ID > 0 ) {
+		return 'ID';
 	}
 
-	const preparedSiteUrl = FeedSubscriptionHelper.prepareSiteUrl( url );
-	const subscriptionIndex = subscriptions.list.findIndex( function( item ) {
-		return item.get( 'URL' ) === preparedSiteUrl;
+	return 'URL';
+}
+
+const FeedSubscriptionStore = createReducerStore( ( state, payload ) => {
+	switch ( payload.action.type ) {
+		case actionTypes.FOLLOW_READER_FEED:
+			return addSubscription( state, payload.action.data );
+
+		// case actionTypes.UNFOLLOW_READER_FEED:
+		// 	return receiveUnfollow( state, payload.action );
+
+		// case actionTypes.ACTION_RECEIVE_READER_LIST_ITEMS:
+		// 	return receiveItems( state, payload.action.data );
+
+		// case actionTypes.ACTION_RECEIVE_READER_LIST_ITEMS_ERROR:
+		// 	const errors = state.get( 'errors' );
+		// 	return state.set( 'errors', errors.push( payload.action.error ) );
+
+		// case actionTypes.ACTION_FETCH_READER_LIST_ITEMS:
+		// 	return state.set( 'isFetching', true );
+
+		// case actionTypes.ACTION_FETCH_READER_LIST_ITEMS_COMPLETE:
+		// 	return state.set( 'isFetching', false );
+	}
+
+	return state;
+}, initialState );
+
+FeedSubscriptionStore.isFetching = function() {
+	const state = FeedSubscriptionStore.get();
+	return state.get( 'isFetching' );
+};
+
+FeedSubscriptionStore.getLastError = function() {
+	const state = FeedSubscriptionStore.get();
+	return state.has( 'errors' ) ? state.get( 'errors' ).last() : null;
+};
+
+FeedSubscriptionStore.isLastPage = function() {
+	const state = FeedSubscriptionStore.get();
+	return state.get( 'isLastPage' );
+};
+
+FeedSubscriptionStore.getCurrentPage = function() {
+	const state = FeedSubscriptionStore.get();
+	return state.get( 'currentPage' );
+};
+
+FeedSubscriptionStore.clearSubscriptions = function() {
+	const state = FeedSubscriptionStore.get();
+	return state.set( 'subscriptions', [] );
+};
+
+FeedSubscriptionStore.getSubscription = function( key, value, includeUnsubscribed ) { //@todo includeUnsubscribed
+	const state = FeedSubscriptionStore.get();
+
+	let preparedValue = value;
+	if ( key === 'URL' ) {
+		preparedValue = FeedSubscriptionHelper.prepareSiteUrl( value );
+	}
+
+	return state.get( 'subscriptions' ).find( function( subscription ) {
+		return ( subscription.get( key ) === preparedValue && subscription.get( 'state' ) === stateTypes.SUBSCRIBED );
 	} );
+};
 
-	if ( isNaN( subscriptionIndex ) ) {
-		return;
-	}
-
-	const existingSubscription = subscriptions.list.get( subscriptionIndex );
-
-	// If it's a refollow (i.e. the store has handled an unsubscribe for this feed already), add is_refollow flag to the updated subscription object
-	if ( existingSubscription.get( 'state' ) === States.UNSUBSCRIBED && typeof newSubscriptionInfo.get === 'function' && newSubscriptionInfo.get( 'state' ) === States.SUBSCRIBED ) {
-		newSubscriptionInfo = newSubscriptionInfo.merge( { is_refollow: true } );
-	}
-
-	const updatedSubscription = existingSubscription.merge( newSubscriptionInfo );
-	const updatedSubscriptionsList = subscriptions.list.set( subscriptionIndex, updatedSubscription );
-
-	if ( updatedSubscriptionsList === subscriptions.list ) {
-		return false;
-	}
-
-	subscriptions.list = updatedSubscriptionsList;
-
-	if ( totalSubscriptions > 0 && existingSubscription.get( 'state' ) === States.UNSUBSCRIBED && updatedSubscription.get( 'state' ) === States.SUBSCRIBED ) {
-		totalSubscriptions++;
-	}
-
-	return true;
-}
-
-function removeSubscription( subscription ) {
-	if ( ! subscription || ! subscription.URL ) {
-		return;
-	}
-
-	const newSubscriptionInfo = { state: States.UNSUBSCRIBED };
-
-	updateSubscription( subscription.URL, newSubscriptionInfo );
-
-	if ( totalSubscriptions > 0 ) {
-		totalSubscriptions--;
-	}
-
-	return true;
-}
-
-Emitter( FeedSubscriptionStore ); // eslint-disable-line
-
-// Increase the max number of listeners from 10 to 100
-FeedSubscriptionStore.setMaxListeners( 100 );
-
-FeedSubscriptionStore.dispatchToken = Dispatcher.register( function( payload ) {
-	var action = payload.action;
-
-	if ( ! action ) {
-		return;
-	}
-
-	switch ( action.type ) {
-		case ActionTypes.FOLLOW_READER_FEED:
-			FeedSubscriptionStore.receiveFollow( action );
-			break;
-		case ActionTypes.UNFOLLOW_READER_FEED:
-			FeedSubscriptionStore.receiveUnfollow( action );
-			break;
-		case ActionTypes.RECEIVE_FOLLOW_READER_FEED:
-			FeedSubscriptionStore.receiveFollowResponse( action );
-			break;
-		case ActionTypes.RECEIVE_UNFOLLOW_READER_FEED:
-			FeedSubscriptionStore.receiveUnfollowResponse( action );
-			break;
-		case ActionTypes.DISMISS_FOLLOW_ERROR:
-			FeedSubscriptionStore.dismissError( action );
-			break;
-		case PostStoreActionTypes.RECEIVE_FEED_POST:
-			if ( action.data && ! action.data.errors ) {
-				FeedSubscriptionStore.receivePost( action.data );
-			}
-			break;
-		case ActionTypes.RECEIVE_FEED_SUBSCRIPTIONS:
-			if ( action.data && ! action.data.errors ) {
-				FeedSubscriptionStore.receiveSubscriptions( action.data );
-			}
-			break;
-	}
-} );
-
-module.exports = FeedSubscriptionStore;
+export default FeedSubscriptionStore;

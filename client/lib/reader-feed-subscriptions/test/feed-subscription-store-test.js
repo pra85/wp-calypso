@@ -20,13 +20,13 @@ describe( 'feed-subscription-store', function() {
 		expect( FeedSubscriptionStore ).to.have.property( 'dispatchToken' );
 	} );
 
-	it( 'should follow a new feed', function() {
+	it( 'should follow a new feed by URL', function() {
 		var siteUrl = 'http://trailnose.com';
 
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -44,14 +44,14 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
 		Dispatcher.handleViewAction( {
 			type: 'UNFOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -65,7 +65,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -96,7 +96,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: zeldmanSiteUrl,
-			data: { url: zeldmanSiteUrl },
+			data: { URL: zeldmanSiteUrl },
 			error: null
 		} );
 
@@ -138,7 +138,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: zeldmanSiteUrl,
-			data: { url: zeldmanSiteUrl },
+			data: { URL: zeldmanSiteUrl },
 			error: null
 		} );
 
@@ -203,7 +203,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -224,7 +224,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'UNFOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -232,7 +232,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -258,7 +258,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -268,7 +268,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'UNFOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
@@ -278,7 +278,7 @@ describe( 'feed-subscription-store', function() {
 		Dispatcher.handleViewAction( {
 			type: 'FOLLOW_READER_FEED',
 			url: siteUrl,
-			data: { url: siteUrl },
+			data: { URL: siteUrl },
 			error: null
 		} );
 
