@@ -24,7 +24,9 @@ const ExpandableSidebarAddForm = React.createClass( {
 	},
 
 	toggleAdd() {
-		this.refs.menuAddInput.focus();
+		if ( ! this.state.isAdding ) {
+			this.refs.menuAddInput.focus();
+		}
 		this.setState( { isAdding: ! this.state.isAdding } );
 	},
 
