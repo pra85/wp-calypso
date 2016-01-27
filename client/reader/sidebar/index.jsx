@@ -23,9 +23,9 @@ import SidebarHeading from 'layout/sidebar/heading';
 import SidebarMenu from 'layout/sidebar/menu';
 import Gridicon from 'components/gridicon';
 import discoverHelper from 'reader/discover/helper';
-import ReaderSidebarTags from './tags';
-import ReaderSidebarLists from './lists';
-import ReaderSidebarTeams from './teams';
+import ReaderSidebarTags from './reader-sidebar-tags';
+import ReaderSidebarLists from './reader-sidebar-lists';
+import ReaderSidebarTeams from './reader-sidebar-teams';
 import ReaderSidebarHelper from './helper';
 import { toggleReaderSidebarLists, toggleReaderSidebarTags } from 'state/ui/reader/sidebar/actions';
 
