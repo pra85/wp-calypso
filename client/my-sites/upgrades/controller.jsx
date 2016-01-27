@@ -251,9 +251,18 @@ module.exports = {
 		var CheckoutThankYouComponent = require( './checkout/thank-you' ),
 			cartItems = require( 'lib/cart-values' ).cartItems,
 			lastTransaction = CheckoutThankYouComponent.getLastTransaction(),
-			selectedSite = lastTransaction.selectedSite,
-			cart = lastTransaction.cart,
-			cartAllItems = cartItems.getAll( cart );
+			selectedSite,
+			cart,
+			cartAllItems;
+
+		if ( ! lastTransaction ) {
+			next();
+			return;
+		}
+
+		selectedSite = lastTransaction.selectedSite,
+		cart = lastTransaction.cart,
+		cartAllItems = cartItems.getAll( cart );
 
 		if ( cartItems.hasOnlyProductsOf( cart, 'premium_theme' ) ) {
 			const { meta, extra: { source } } = cartAllItems[ 0 ];
