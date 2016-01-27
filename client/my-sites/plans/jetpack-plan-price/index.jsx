@@ -8,13 +8,13 @@ module.exports = React.createClass( {
 
 	render: function() {
 		return (
-			<div className="plan-price">
+			<div className="jetpack-plan-price">
 				<span className="jetpack-price">{ this.props.plan.formatted_original_price }</span>
-				<small className="plan-price__billing-period">
+				<small className="jetpack-plan-price__billing-period">
 					{ this.translate( 'cost of individual plugins' ) }
 				</small>
 				<span className="jetpack-price">{ this.props.getPrice() }</span>
-				<small className="plan-price__billing-period">
+				<small className="jetpack-plan-price__billing-period">
 					{ this.props.hasDiscount ? this.translate( 'for first year' ) : this.props.plan.bill_period_label } (
 					{ this.props.plan.saving }
 					{ this.translate( '% savings', { context: 'A percentage discount, eg: 20% savings' } ) })
