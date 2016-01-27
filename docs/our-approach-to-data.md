@@ -196,7 +196,7 @@ export default connect( ( state, ownProps ) => {
 The `connect` function accepts two arguments, and they each serve a distinct purpose. Both pass props to the connected component, and are respectively used to provide data and handle behavior on behalf of the component.
 
 1. `mapStateToProps`: A function which, given the store state, returns props to be passed to the connected component. This is used to satisfy the need to make data available to the component.
-2. `mapDispatchToProps`: A function which, given the store dispatch method, returns props to be passed to the connected component. This is used to satsify the need to allow the component to update the store state.
+2. `mapDispatchToProps`: A function which, given the store dispatch method, returns props to be passed to the connected component. This is used to satisfy the need to allow the component to update the store state.
 
 As an example, consider a component which renders a Delete button for a given post. We want to display the post title as a label in the delete button, and allow the component to trigger the post deletion when clicked.
 
