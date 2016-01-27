@@ -166,7 +166,7 @@ var PlansCompare = React.createClass( {
 		if ( site && site.jetpack ) {
 			plans.shift();
 		}
-		
+
 		if ( this.props.features.hasLoadedFromServer() && (
 			this.props.isInSignup || ! this.props.selectedSite || ( this.props.sitePlans && this.props.sitePlans.hasLoadedFromServer ) )
 		) {
@@ -228,7 +228,7 @@ var PlansCompare = React.createClass( {
 	render: function() {
 		var compareString = this.translate( 'Compare Plans' );
 
-		if ( this.props.selectedSite.jetpack ) {
+		if ( this.props.selectedSite && this.props.selectedSite.jetpack ) {
 			compareString = this.translate( 'Compare Options' );
 		}
 
