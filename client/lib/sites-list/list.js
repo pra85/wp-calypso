@@ -372,7 +372,7 @@ SitesList.prototype.isSelected = function( site ) {
  * @api public
  */
 SitesList.prototype.isStarred = function( site ) {
-	return this.starred.indexOf( site.ID ) > -1 || site.primary;
+	return this.starred.indexOf( site.ID ) > -1;
 };
 
 SitesList.prototype.toggleStarred = function( siteID ) {
@@ -398,7 +398,7 @@ SitesList.prototype.getStarred = function() {
 	}
 
 	return this.get().filter( function( site ) {
-		return this.starred.indexOf( site.ID ) > -1 || site.primary;
+		return this.starred.indexOf( site.ID ) > -1;
 	}, this );
 };
 
