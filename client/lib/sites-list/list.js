@@ -393,7 +393,7 @@ SitesList.prototype.toggleStarred = function( siteID ) {
 };
 
 SitesList.prototype.getStarred = function() {
-	if ( ! this.starred.length || ! this.initialized ) {
+	if ( ! this.initialized ) {
 		return false;
 	}
 
