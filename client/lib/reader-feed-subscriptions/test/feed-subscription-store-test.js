@@ -104,7 +104,7 @@ describe( 'feed-subscription-store', function() {
 		// The response from the API - if there is a problem here, the
 		// follow should be removed from the store and an error made available
 		Dispatcher.handleServerAction( {
-			type: 'RECEIVE_FOLLOW_READER_FEED',
+			type: 'RECEIVE_FOLLOW_READER_FEED_ERROR',
 			url: zeldmanSiteUrl,
 			data: null,
 			error: new Error( 'There was a problem' )
@@ -117,7 +117,7 @@ describe( 'feed-subscription-store', function() {
 		// The response from the API - if there is a problem here, the
 		// follow should be removed from the store and an error made available
 		Dispatcher.handleServerAction( {
-			type: 'RECEIVE_FOLLOW_READER_FEED',
+			type: 'RECEIVE_FOLLOW_READER_FEED_ERROR',
 			url: zeldmanSiteUrl,
 			data: {
 				info: 'unable_to_follow',
@@ -126,7 +126,7 @@ describe( 'feed-subscription-store', function() {
 		} );
 
 		expect( FeedSubscriptionStore.getIsFollowing( 'URL', zeldmanSiteUrl ) ).to.eq( false );
-		expect( FeedSubscriptionStore.getLastError( 'URL', zeldmanSiteUrl ).errorType ).to.be.ok;
+		expect( FeedSubscriptionStore.getLastError( 'URL', zeldmanSiteUrl ).get( 'errorType' ) ).to.be.ok;
 		expect( FeedSubscriptionStore.getLastError( 'URL', 'blah' ) ).to.be.undefined;
 	} );
 

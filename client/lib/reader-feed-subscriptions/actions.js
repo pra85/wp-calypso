@@ -34,7 +34,7 @@ const FeedSubscriptionActions = {
 		} );
 
 		wpcom.undocumented().followReaderFeed( { url: preparedUrl, meta: meta }, function( error, data ) {
-			if ( error ) {
+			if ( error || data.info ) {
 				Dispatcher.handleServerAction( {
 					type: ActionTypes.RECEIVE_FOLLOW_READER_FEED_ERROR,
 					url: preparedUrl,

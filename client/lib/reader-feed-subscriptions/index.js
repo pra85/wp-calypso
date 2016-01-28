@@ -49,9 +49,17 @@ FeedSubscriptionStore.isFetching = function() {
 	return state.get( 'isFetching' );
 };
 
-FeedSubscriptionStore.getLastError = function() {
+FeedSubscriptionStore.getLastError = function( key, value ) {
 	const state = FeedSubscriptionStore.get();
-	return state.has( 'errors' ) ? state.get( 'errors' ).last() : null;
+
+	let preparedValue = value;
+	if ( key === 'URL' ) {
+		preparedValue = FeedSubscriptionHelper.prepareSiteUrl( value );
+	}
+
+	return state.get( 'errors' ).reverse().find( function( error ) {
+		return ( error.get( key ) === preparedValue );
+	} );
 };
 
 FeedSubscriptionStore.isLastPage = function() {
@@ -137,7 +145,7 @@ function addSubscription( state, subscription ) {
 // Update an existing subscription with new information
 function updateSubscription( state, newSubscriptionInfo ) {
 	if ( ! newSubscriptionInfo ) {
-		return;
+		return state;
 	}
 
 	// Prepare URL, if we have one
@@ -146,8 +154,12 @@ function updateSubscription( state, newSubscriptionInfo ) {
 	}
 
 	const subscriptionKey = chooseBestSubscriptionKey( newSubscriptionInfo );
-	const existingSubscription = FeedSubscriptionStore.getSubscription( subscriptionKey, newSubscriptionInfo.get( subscriptionKey ) );
 	const existingSubscriptionIndex = FeedSubscriptionStore.getSubscriptionIndex( subscriptionKey, newSubscriptionInfo.get( subscriptionKey ) );
+	const existingSubscription = state.get( 'subscriptions' ).get( +existingSubscriptionIndex );
+
+	if ( ! existingSubscription ) {
+		return state;
+	}
 
 	// If it's a refollow (i.e. the store has handled an unsubscribe for this feed already), add is_refollow flag to the updated subscription object
 	if ( existingSubscription.get( 'state' ) === stateTypes.UNSUBSCRIBED && typeof newSubscriptionInfo.get === 'function' && newSubscriptionInfo.get( 'state' ) === stateTypes.SUBSCRIBED ) {
@@ -211,27 +223,23 @@ function receiveFollowResponse( state, action ) {
 }
 
 function receiveFollowError( state, action ) {
-	// put it in errors
-	// if ( errorInfo !== 'already_subscribed' ) {
-	// 	stateAfterRemoval = removeSubscription( state, updatedSubscriptionInfo );
-	// // }
-	// const errorInfo = get( action, 'data.info' );
+	const errorInfo = get( action, 'data.info' );
 
-	// let errors = state.get( 'errors' );
-	// errors.push( {
-	// 	URL: action.url, // @todo need to account for other types of key
-	// 	errorType: errorTypes.UNABLE_TO_FOLLOW,
-	// 	info: errorInfo,
-	// 	timestamp: Date.now()
-	// } );
+	let errors = state.get( 'errors' );
+	errors = errors.push( fromJS( {
+		URL: action.url,
+		errorType: errorTypes.UNABLE_TO_FOLLOW,
+		info: errorInfo,
+		timestamp: Date.now()
+	} ) );
 
-	// // If the user is already subscribed, we don't want to remove the subscription again
-	// let stateAfterRemoval = state;
-	// if ( errorInfo !== 'already_subscribed' ) {
-	// 	stateAfterRemoval = removeSubscription( state, updatedSubscriptionInfo );
-	// }
+	// If the user is already subscribed, we don't want to remove the subscription again
+	let stateAfterRemoval = state;
+	if ( errorInfo !== 'already_subscribed' ) {
+		stateAfterRemoval = removeSubscription( state, { URL: action.url } );
+	}
 
-	// return stateAfterRemoval.set( 'errors', errors );
+	return stateAfterRemoval.set( 'errors', errors );
 }
 
 export default FeedSubscriptionStore;
