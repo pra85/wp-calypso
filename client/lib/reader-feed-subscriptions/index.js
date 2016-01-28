@@ -37,6 +37,8 @@ const FeedSubscriptionStore = createReducerStore( ( state, payload ) => {
 		case actionTypes.RECEIVE_FOLLOW_READER_FEED:
 			return receiveFollowResponse( state, payload.action );
 
+		case actionTypes.RECEIVE_FOLLOW_READER_FEED_ERROR:
+			return receiveFollowError( state, payload.action );
 	}
 
 	return state;
@@ -100,6 +102,12 @@ FeedSubscriptionStore.removeErrorsForSubscription = function( subscription ) {
 
 	return state;
 };
+
+
+FeedSubscriptionStore.getIsFollowing = function( key, value ) {
+	return !! ( this.getSubscription( key, value ) );
+};
+
 
 function addSubscription( state, subscription ) {
 	if ( ! subscription ) {
@@ -183,7 +191,7 @@ function chooseBestSubscriptionKey( subscription ) {
 function receiveFollowResponse( state, action ) {
 	var updatedSubscriptionInfo;
 
-	if ( ! action.error && action.data && action.data.subscribed && ! action.data.info ) {
+	if ( action.data && action.data.subscribed && ! action.data.info ) {
 		// The follow worked - discard any existing errors for this site
 		FeedSubscriptionStore.removeErrorsForSubscription( action.data.subscription );
 
@@ -197,26 +205,33 @@ function receiveFollowResponse( state, action ) {
 			// @todo another other way to do this?
 			//FeedSubscriptionStore.emit( 'add', FeedSubscriptionStore.getSubscription( updatedSubscriptionInfo ) );
 		}
-
-		return state;
 	}
 
-	const errorInfo = get( action, 'data.info' );
+	return state;
+}
 
-	let errors = state.get( 'errors' );
-	errors.push( {
-		URL: action.url, // @todo need to account for other types of key
-		errorType: errorTypes.UNABLE_TO_FOLLOW,
-		info: errorInfo,
-		timestamp: Date.now()
-	} );
+function receiveFollowError( state, action ) {
+	// put it in errors
+	// if ( errorInfo !== 'already_subscribed' ) {
+	// 	stateAfterRemoval = removeSubscription( state, updatedSubscriptionInfo );
+	// // }
+	// const errorInfo = get( action, 'data.info' );
 
-	// If the user is already subscribed, we don't want to remove the subscription again
-	if ( errorInfo !== 'already_subscribed' ) {
-		removeSubscription( state, updatedSubscriptionInfo );
-	}
+	// let errors = state.get( 'errors' );
+	// errors.push( {
+	// 	URL: action.url, // @todo need to account for other types of key
+	// 	errorType: errorTypes.UNABLE_TO_FOLLOW,
+	// 	info: errorInfo,
+	// 	timestamp: Date.now()
+	// } );
 
-	return state.set( 'errors', errors );
+	// // If the user is already subscribed, we don't want to remove the subscription again
+	// let stateAfterRemoval = state;
+	// if ( errorInfo !== 'already_subscribed' ) {
+	// 	stateAfterRemoval = removeSubscription( state, updatedSubscriptionInfo );
+	// }
+
+	// return stateAfterRemoval.set( 'errors', errors );
 }
 
 export default FeedSubscriptionStore;

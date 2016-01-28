@@ -1,10 +1,10 @@
 //var debug = require( 'debug' )( 'calypso:feed-subscription-actions' );
 
 // External dependencies
-var get = require( 'lodash/object/get' );
+const get = require( 'lodash/object/get' );
 
 // Internal dependencies
-var Dispatcher = require( 'dispatcher' ),
+const Dispatcher = require( 'dispatcher' ),
 	wpcom = require( 'lib/wp' ),
 	ActionTypes = require( './constants' ).action,
 	FeedSubscriptionHelper = require( './helper' ),
@@ -13,7 +13,7 @@ var Dispatcher = require( 'dispatcher' ),
 	SiteStoreActionTypes = require( 'lib/reader-site-store/constants' ).action,
 	FeedStoreActionTypes = require( 'lib/feed-store/constants' ).action;
 
-var FeedSubscriptionActions = {
+const FeedSubscriptionActions = {
 	follow: function( url, fetchMeta ) {
 		var meta;
 
@@ -34,14 +34,24 @@ var FeedSubscriptionActions = {
 		} );
 
 		wpcom.undocumented().followReaderFeed( { url: preparedUrl, meta: meta }, function( error, data ) {
-			Dispatcher.handleServerAction( {
-				type: ActionTypes.RECEIVE_FOLLOW_READER_FEED,
-				url: preparedUrl,
-				data: data,
-				error: error
-			} );
+			if ( error ) {
+				Dispatcher.handleServerAction( {
+					type: ActionTypes.RECEIVE_FOLLOW_READER_FEED_ERROR,
+					url: preparedUrl,
+					data: data,
+					error: error
+				} );
+			} else {
+				Dispatcher.handleServerAction( {
+					type: ActionTypes.RECEIVE_FOLLOW_READER_FEED,
+					url: preparedUrl,
+					data: data
+				} );
 
-			receiveSubscriptionMeta( data );
+				receiveSubscriptionMeta( data );
+			}
+
+			Dispatcher.handleViewAction( { type: ActionTypes.RECEIVE_FOLLOW_READER_FEED_COMPLETE } );
 		} );
 	},
 
@@ -221,4 +231,4 @@ function receiveSubscriptionMeta( subscription ) {
 	}
 }
 
-module.exports = FeedSubscriptionActions;
+export default FeedSubscriptionActions;

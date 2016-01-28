@@ -88,61 +88,61 @@ describe( 'feed-subscription-store', function() {
 		} ) );
 	} );
 
-	// it( 'should not store a follow if there is an API error', function() {
-	// 	var zeldmanSiteUrl = 'http://www.zeldman.com';
+	it( 'should not store a follow if there is an API error', function() {
+		var zeldmanSiteUrl = 'http://www.zeldman.com';
 
-	// 	// The action from the UI - follow should be stored optimistically
-	// 	Dispatcher.handleViewAction( {
-	// 		type: 'FOLLOW_READER_FEED',
-	// 		url: zeldmanSiteUrl,
-	// 		data: { URL: zeldmanSiteUrl },
-	// 		error: null
-	// 	} );
+		// The action from the UI - follow should be stored optimistically
+		Dispatcher.handleViewAction( {
+			type: 'FOLLOW_READER_FEED',
+			url: zeldmanSiteUrl,
+			data: { URL: zeldmanSiteUrl },
+			error: null
+		} );
 
-	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( zeldmanSiteUrl ) ).to.eq( true );
+		expect( FeedSubscriptionStore.getIsFollowing( 'URL', zeldmanSiteUrl ) ).to.eq( true );
 
-	// 	// The response from the API - if there is a problem here, the
-	// 	// follow should be removed from the store and an error made available
-	// 	Dispatcher.handleServerAction( {
-	// 		type: 'RECEIVE_FOLLOW_READER_FEED',
-	// 		url: zeldmanSiteUrl,
-	// 		data: null,
-	// 		error: new Error( 'There was a problem' )
-	// 	} );
+		// The response from the API - if there is a problem here, the
+		// follow should be removed from the store and an error made available
+		Dispatcher.handleServerAction( {
+			type: 'RECEIVE_FOLLOW_READER_FEED',
+			url: zeldmanSiteUrl,
+			data: null,
+			error: new Error( 'There was a problem' )
+		} );
 
-	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( zeldmanSiteUrl ) ).to.eq( false );
-	// 	expect( FeedSubscriptionStore.getLastErrorBySiteUrl( zeldmanSiteUrl ) ).to.be.an( 'object' );
-	// 	expect( FeedSubscriptionStore.getLastErrorBySiteUrl( 'blah' ) ).to.be.undefined;
+		expect( FeedSubscriptionStore.getIsFollowing( 'URL', zeldmanSiteUrl ) ).to.eq( false );
+		expect( FeedSubscriptionStore.getLastError( 'URL', zeldmanSiteUrl ) ).to.be.an( 'object' );
+		expect( FeedSubscriptionStore.getLastError( 'URL', 'blah' ) ).to.be.undefined;
 
-	// 	// The response from the API - if there is a problem here, the
-	// 	// follow should be removed from the store and an error made available
-	// 	Dispatcher.handleServerAction( {
-	// 		type: 'RECEIVE_FOLLOW_READER_FEED',
-	// 		url: zeldmanSiteUrl,
-	// 		data: {
-	// 			info: 'unable_to_follow',
-	// 			subscribed: false
-	// 		}
-	// 	} );
+		// The response from the API - if there is a problem here, the
+		// follow should be removed from the store and an error made available
+		Dispatcher.handleServerAction( {
+			type: 'RECEIVE_FOLLOW_READER_FEED',
+			url: zeldmanSiteUrl,
+			data: {
+				info: 'unable_to_follow',
+				subscribed: false
+			}
+		} );
 
-	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( zeldmanSiteUrl ) ).to.eq( false );
-	// 	expect( FeedSubscriptionStore.getLastErrorBySiteUrl( zeldmanSiteUrl ).errorType ).to.be.ok;
-	// 	expect( FeedSubscriptionStore.getLastErrorBySiteUrl( 'blah' ) ).to.be.undefined;
-	// } );
+		expect( FeedSubscriptionStore.getIsFollowing( 'URL', zeldmanSiteUrl ) ).to.eq( false );
+		expect( FeedSubscriptionStore.getLastError( 'URL', zeldmanSiteUrl ).errorType ).to.be.ok;
+		expect( FeedSubscriptionStore.getLastError( 'URL', 'blah' ) ).to.be.undefined;
+	} );
 
-	// it( 'should find a feed regardless of protocol used', function() {
-	// 	var zeldmanSiteUrl = 'http://www.zeldman.com';
+	it( 'should find a feed regardless of protocol used', function() {
+		var zeldmanSiteUrl = 'http://www.zeldman.com';
 
-	// 	// The action from the UI - follow should be stored optimistically
-	// 	Dispatcher.handleViewAction( {
-	// 		type: 'FOLLOW_READER_FEED',
-	// 		url: zeldmanSiteUrl,
-	// 		data: { URL: zeldmanSiteUrl },
-	// 		error: null
-	// 	} );
+		// The action from the UI - follow should be stored optimistically
+		Dispatcher.handleViewAction( {
+			type: 'FOLLOW_READER_FEED',
+			url: zeldmanSiteUrl,
+			data: { URL: zeldmanSiteUrl },
+			error: null
+		} );
 
-	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( 'https://www.zeldman.com' ) ).to.eq( true );
-	// } );
+		expect( FeedSubscriptionStore.getIsFollowing( 'URL', 'https://www.zeldman.com' ) ).to.eq( true );
+	} );
 
 	// it( 'should receive a list of subscriptions', function() {
 	// 	FeedSubscriptionStore.setPerPage( 2 );
