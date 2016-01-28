@@ -269,7 +269,7 @@ export default React.createClass( {
 		return (
 			<div>
 				<span className="site-selector__heading">
-					<Gridicon icon="star" size={ 18 } /> { this.translate( 'Starred Sites' ) }
+					<Gridicon icon="star" size={ 18 } /> { this.translate( 'Starred' ) }
 				</span>
 				{ starredSites }
 			</div>
