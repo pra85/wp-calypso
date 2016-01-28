@@ -392,6 +392,16 @@ SitesList.prototype.toggleStarred = function( siteID ) {
 	this.emit( 'change' );
 };
 
+SitesList.prototype.getStarred = function() {
+	if ( ! this.starred.length || ! this.initialized ) {
+		return false;
+	}
+
+	return this.get().filter( function( site ) {
+		return this.starred.indexOf( site.ID ) > -1 || site.primary;
+	}, this );
+};
+
 /**
  * Set recently selected site
  *
@@ -407,12 +417,18 @@ SitesList.prototype.setRecentlySelectedSite = function( siteID ) {
 		return;
 	}
 
+	const index = this.recentlySelected.indexOf( siteID );
+
 	// do not add duplicates
-	if ( this.recentlySelected.indexOf( siteID ) === -1 ) {
-		this.recentlySelected.unshift( siteID );
+	if ( index === -1 ) {
+		if ( ! this.isStarred( this.getSite( siteID ) ) ) {
+			this.recentlySelected.unshift( siteID );
+		}
 	} else {
-		this.recentlySelected.splice( this.recentlySelected.indexOf( siteID ), 1 );
-		this.recentlySelected.unshift( siteID );
+		this.recentlySelected.splice( index, 1 );
+		if ( ! this.isStarred( this.getSite( siteID ) ) ) {
+			this.recentlySelected.unshift( siteID );
+		}
 	}
 
 	if ( this.recentlySelected.length > 3 ) {
@@ -533,9 +549,9 @@ SitesList.prototype.getVisible = function() {
  *
  * @api public
  **/
-SitesList.prototype.getVisibleAndNotRecent = function() {
+SitesList.prototype.getVisibleAndNotRecentNorStarred = function() {
 	return this.get().filter( function( site ) {
-		return site.visible === true && this.recentlySelected.indexOf( site.ID ) === -1;
+		return site.visible === true && this.recentlySelected.indexOf( site.ID ) === -1 && ! this.isStarred( site );
 	}, this );
 };
 
