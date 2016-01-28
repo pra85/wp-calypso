@@ -1,11 +1,10 @@
 /**
  * External Dependencies
  */
-var chai = require( 'chai' ),
-	expect = chai.expect,
-	Dispatcher = require( 'dispatcher' ),
-	immutable = require( 'immutable' ),
-	chaiImmutable = require( 'chai-immutable' );
+import chai, { expect} from 'chai';
+import Dispatcher from 'dispatcher';
+import Immutable from 'Immutable';
+import chaiImmutable from 'chai-Immutable';
 
 chai.use( chaiImmutable );
 
@@ -30,7 +29,7 @@ describe( 'feed-subscription-store', function() {
 			error: null
 		} );
 
-		expect( FeedSubscriptionStore.getSubscription( siteUrl ) ).to.equal( immutable.fromJS(
+		expect( FeedSubscriptionStore.getSubscription( siteUrl ) ).to.equal( Immutable.fromJS(
 			{
 				URL: siteUrl,
 				state: 'SUBSCRIBED'
@@ -58,36 +57,36 @@ describe( 'feed-subscription-store', function() {
 		expect( FeedSubscriptionStore.getSubscription( 'URL', siteUrl ) ).to.be.undefined;
 	} );
 
-	// it( 'should add subscription details when a follow is confirmed', function() {
-	// 	var siteUrl = 'http://trailnose.com';
+	it( 'should add subscription details when a follow is confirmed', function() {
+		const siteUrl = 'http://trailnose.com';
 
-	// 	// The initial action from the UI
-	// 	Dispatcher.handleViewAction( {
-	// 		type: 'FOLLOW_READER_FEED',
-	// 		url: siteUrl,
-	// 		data: { URL: siteUrl },
-	// 		error: null
-	// 	} );
+		// The initial action from the UI
+		Dispatcher.handleViewAction( {
+			type: 'FOLLOW_READER_FEED',
+			url: siteUrl,
+			data: { URL: siteUrl },
+			error: null
+		} );
 
-	// 	// The action from the API response
-	// 	Dispatcher.handleServerAction( {
-	// 		type: 'RECEIVE_FOLLOW_READER_FEED',
-	// 		url: siteUrl,
-	// 		data: {
-	// 			subscribed: true,
-	// 			subscription: {
-	// 				URL: siteUrl,
-	// 				feed_ID: 123
-	// 			}
-	// 		}
-	// 	} );
+		// The action from the API response
+		Dispatcher.handleServerAction( {
+			type: 'RECEIVE_FOLLOW_READER_FEED',
+			url: siteUrl,
+			data: {
+				subscribed: true,
+				subscription: {
+					URL: siteUrl,
+					feed_ID: 123
+				}
+			}
+		} );
 
-	// 	expect( FeedSubscriptionStore.getSubscription( siteUrl ) ).to.equal( immutable.fromJS( {
-	// 		URL: siteUrl,
-	// 		feed_ID: 123,
-	// 		state: 'SUBSCRIBED'
-	// 	} ) );
-	// } );
+		expect( FeedSubscriptionStore.getSubscription( 'URL', siteUrl ) ).to.equal( Immutable.fromJS( {
+			URL: siteUrl,
+			feed_ID: 123,
+			state: 'SUBSCRIBED'
+		} ) );
+	} );
 
 	// it( 'should not store a follow if there is an API error', function() {
 	// 	var zeldmanSiteUrl = 'http://www.zeldman.com';
@@ -155,7 +154,7 @@ describe( 'feed-subscription-store', function() {
 	// 	} );
 
 	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( 'https://www.feijoa.com' ) ).to.eq( true );
-	// 	expect( FeedSubscriptionStore.getSubscription( 'http://www.banana.com' ) ).to.equal( immutable.fromJS( {
+	// 	expect( FeedSubscriptionStore.getSubscription( 'http://www.banana.com' ) ).to.equal( Immutable.fromJS( {
 	// 		ID: 1,
 	// 		URL: 'http://www.banana.com',
 	// 		feed_ID: 123,
@@ -172,7 +171,7 @@ describe( 'feed-subscription-store', function() {
 
 	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( 'https://www.feijoa.com' ) ).to.eq( true );
 	// 	expect( FeedSubscriptionStore.getIsFollowingBySiteUrl( 'https://www.dragonfruit.com' ) ).to.eq( true );
-	// 	expect( FeedSubscriptionStore.getSubscription( 'http://www.dragonfruit.com' ) ).to.equal( immutable.fromJS( {
+	// 	expect( FeedSubscriptionStore.getSubscription( 'http://www.dragonfruit.com' ) ).to.equal( Immutable.fromJS( {
 	// 		ID: 3,
 	// 		URL: 'http://www.dragonfruit.com',
 	// 		feed_ID: 456,

@@ -3,9 +3,10 @@
 // External dependencies
 import { Map, fromJS } from 'immutable';
 import debugModule from 'debug';
+import get from 'lodash/object/get';
 
 // Internal dependencies
-import { action as actionTypes, state as stateTypes } from './constants';
+import { action as actionTypes, state as stateTypes, error as errorTypes } from './constants';
 import { createReducerStore } from 'lib/store';
 import FeedSubscriptionHelper from './helper';
 
@@ -32,6 +33,10 @@ const FeedSubscriptionStore = createReducerStore( ( state, payload ) => {
 
 		case actionTypes.UNFOLLOW_READER_FEED:
 			return removeSubscription( state, payload.action.data );
+
+		case actionTypes.RECEIVE_FOLLOW_READER_FEED:
+			return receiveFollowResponse( state, payload.action );
+
 	}
 
 	return state;
@@ -62,7 +67,7 @@ FeedSubscriptionStore.clearSubscriptions = function() {
 	return state.set( 'subscriptions', [] );
 };
 
-FeedSubscriptionStore.getSubscription = function( key, value, includeUnsubscribed ) { //@todo includeUnsubscribed
+FeedSubscriptionStore.getSubscription = function( key, value ) {
 	const state = FeedSubscriptionStore.get();
 
 	let preparedValue = value;
@@ -86,6 +91,14 @@ FeedSubscriptionStore.getSubscriptionIndex = function( key, value ) {
 	return state.get( 'subscriptions' ).findIndex( function( subscription ) {
 		return ( subscription.get( key ) === preparedValue );
 	} );
+};
+
+FeedSubscriptionStore.removeErrorsForSubscription = function( subscription ) {
+	const state = FeedSubscriptionStore.get();
+
+	//@todo
+
+	return state;
 };
 
 function addSubscription( state, subscription ) {
@@ -165,6 +178,45 @@ function chooseBestSubscriptionKey( subscription ) {
 	}
 
 	return 'URL';
+}
+
+function receiveFollowResponse( state, action ) {
+	var updatedSubscriptionInfo;
+
+	if ( ! action.error && action.data && action.data.subscribed && ! action.data.info ) {
+		// The follow worked - discard any existing errors for this site
+		FeedSubscriptionStore.removeErrorsForSubscription( action.data.subscription );
+
+		// Remove the placeholder subscription and add the full subscription info
+		if ( action.data.subscription ) {
+			updatedSubscriptionInfo = action.data.subscription;
+			updatedSubscriptionInfo.state = stateTypes.SUBSCRIBED;
+
+			return updateSubscription( state, fromJS( updatedSubscriptionInfo ) );
+
+			// @todo another other way to do this?
+			//FeedSubscriptionStore.emit( 'add', FeedSubscriptionStore.getSubscription( updatedSubscriptionInfo ) );
+		}
+
+		return state;
+	}
+
+	const errorInfo = get( action, 'data.info' );
+
+	let errors = state.get( 'errors' );
+	errors.push( {
+		URL: action.url, // @todo need to account for other types of key
+		errorType: errorTypes.UNABLE_TO_FOLLOW,
+		info: errorInfo,
+		timestamp: Date.now()
+	} );
+
+	// If the user is already subscribed, we don't want to remove the subscription again
+	if ( errorInfo !== 'already_subscribed' ) {
+		removeSubscription( state, updatedSubscriptionInfo );
+	}
+
+	return state.set( 'errors', errors );
 }
 
 export default FeedSubscriptionStore;
