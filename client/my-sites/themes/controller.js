@@ -11,6 +11,7 @@ var ReactDom = require( 'react-dom' ),
  */
 var SingleSiteComponent = require( 'my-sites/themes/single-site' ),
 	MultiSiteComponent = require( 'my-sites/themes/multi-site' ),
+	LoggedOutComponent = require( 'my-sites/themes/logged-out' ),
 	analytics = require( 'analytics' ),
 	route = require( 'lib/route' ),
 	i18n = require( 'lib/mixins/i18n' ),
@@ -32,6 +33,7 @@ var controller = {
 
 		let basePath = route.sectionify( context.path );
 		let analyticsPageTitle = 'Themes';
+		let ThemesComponent;
 
 		if ( site_id ) {
 			basePath = basePath + '/:site_id';
@@ -42,11 +44,17 @@ var controller = {
 			analyticsPageTitle += ` > Type > ${titlecase( tier )}`;
 		}
 
+		if ( user ) {
+			ThemesComponent = site_id ? SingleSiteComponent : MultiSiteComponent;
+		} else {
+			ThemesComponent = LoggedOutComponent;
+		}
+
 		analytics.pageView.record( basePath, analyticsPageTitle );
 		ReactDom.render(
 			React.createElement( ReduxProvider, { store: context.store },
 				React.createElement( Head, { title, tier: tier || 'all' },
-					React.createElement( site_id ? SingleSiteComponent : MultiSiteComponent, {
+					React.createElement( ThemesComponent, {
 						key: site_id,
 						siteId: site_id,
 						tier: tier,
