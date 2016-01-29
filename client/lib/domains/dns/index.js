@@ -101,17 +101,17 @@ function getNormalizedName( name, type, selectedDomainName ) {
 	}
 
 	if ( endsWithDomain ) {
-		if ( isARecord( type ) ) {
+		if ( isIpRecord( type ) ) {
 			return name.replace( new RegExp( '\\.+' + selectedDomainName + '\\.?$', 'i' ), '' );
 		}
 		return getFieldWithDot( name );
-	} else if ( ! isARecord( type ) ) {
+	} else if ( ! isIpRecord( type ) ) {
 		return name + '.' + selectedDomainName + '.';
 	}
 	return name;
 }
 
-function isARecord( type ) {
+function isIpRecord( type ) {
 	return includes( [ 'A', 'AAAA' ], type );
 }
 
