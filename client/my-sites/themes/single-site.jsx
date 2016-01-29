@@ -50,8 +50,7 @@ var Themes = React.createClass( {
 		if ( site.jetpack ) {
 			this.props.dispatch( Action.customize( theme, site ) );
 		} else {
-			const previewUrl = ThemeHelpers.getPreviewUrl( theme, site );
-			this.setState( { showPreview: ! this.state.showPreview, previewUrl: previewUrl, previewingTheme: theme } );
+			this.setState( { showPreview: ! this.state.showPreview, previewingTheme: theme } );
 		}
 	},
 
