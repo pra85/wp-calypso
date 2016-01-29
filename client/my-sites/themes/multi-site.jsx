@@ -23,7 +23,7 @@ var Main = require( 'components/main' ),
 	getCurrentUser = require( 'state/current-user/selectors' ).getCurrentUser,
 	config = require( 'config' );
 
-var Themes = React.createClass( {
+var ThemesMultiSite = React.createClass( {
 	propTypes: {
 		isLoggedOut: React.PropTypes.bool.isRequired
 	},
@@ -155,4 +155,4 @@ export default connect(
 			isLoggedOut: ! getCurrentUser( state )
 		}
 	)
-)( Themes );
+)( ThemesMultiSite );

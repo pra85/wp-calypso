@@ -29,7 +29,7 @@ var Main = require( 'components/main' ),
 	ThemesListSelectors = require( 'state/themes/themes-list/selectors' ),
 	getSelectedSite = require( 'state/ui/selectors' ).getSelectedSite;
 
-var Themes = React.createClass( {
+var ThemesSingleSite = React.createClass( {
 	propTypes: {
 		siteId: React.PropTypes.string,
 		selectedSite: React.PropTypes.oneOfType( [
@@ -190,4 +190,4 @@ export default connect(
 			selectedSite: getSelectedSite( state )
 		}
 	)
-)( Themes );
+)( ThemesSingleSite );

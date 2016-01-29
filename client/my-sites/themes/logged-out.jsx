@@ -18,7 +18,7 @@ var Main = require( 'components/main' ),
 	actionLabels = require( './action-labels' ),
 	ThemesListSelectors = require( 'state/themes/themes-list/selectors' );
 
-var Themes = React.createClass( {
+var ThemesLoggedOut = React.createClass( {
 
 	getInitialState: function() {
 		return {
@@ -116,4 +116,4 @@ export default connect(
 			themesList: ThemesListSelectors.getThemesList( state )
 		}
 	)
-)( Themes );
+)( ThemesLoggedOut );
