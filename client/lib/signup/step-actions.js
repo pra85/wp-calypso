@@ -43,8 +43,18 @@ function fetchSitesAndUser( siteSlug, onComplete ) {
 	user.fetch();
 }
 
+function setThemeOnSite( callback, { siteSlug }, { themeSlug } ) {
+	if ( isEmpty( themeSlug ) ) {
+		return defer( callback );
+	}
+
+	wpcom.undocumented().changeTheme( siteSlug, { theme: themeSlug }, function( errors ) {
+		callback( isEmpty( errors ) ? undefined : [ errors ] );
+	} );
+}
+
 module.exports = {
-	addDomainItemsToCart( callback, dependencies, { domainItem, googleAppsCartItem, isPurchasingItem, siteUrl } ) {
+	addDomainItemsToCart( callback, dependencies, { domainItem, googleAppsCartItem, isPurchasingItem, siteUrl, themeSlug, themeItem } ) {
 		wpcom.undocumented().sitesNew( {
 			blog_name: siteUrl,
 			blog_title: siteUrl,
@@ -59,26 +69,37 @@ module.exports = {
 				return callback( error );
 			}
 
-			const siteSlug = response.blog_details.blogname + '.wordpress.com',
-				providedDependencies = {
-					siteSlug,
-					domainItem
-				},
-				addToCartAndProceed = () => {
-					if ( isPurchasingItem ) {
-						let newCartItems = [ domainItem ];
+			const siteSlug = response.blog_details.blogname + '.wordpress.com';
+			const	providedDependencies = {
+				siteSlug,
+				domainItem,
+				themeItem,
+			};
+			const addToCartAndProceed = () => {
+				let newCartItems = [];
 
-						if ( googleAppsCartItem ) {
-							newCartItems = newCartItems.concat( googleAppsCartItem );
-						}
+				if ( domainItem ) {
+					newCartItems = [ ...newCartItems, domainItem ];
+				}
+				if ( googleAppsCartItem ) {
+					newCartItems = [ ...newCartItems, googleAppsCartItem ];
+				}
+				if ( themeItem ) {
+					newCartItems = [ ...newCartItems, themeItem ];
+				}
 
-						SignupCart.addToCart( siteSlug, newCartItems, function( cartError ) {
-							callback( cartError, providedDependencies );
-						} );
-					} else {
-						callback( [], providedDependencies );
-					}
-				};
+				if ( newCartItems.length ) {
+					SignupCart.addToCart( siteSlug, newCartItems, function( cartError ) {
+						callback( cartError, providedDependencies );
+					} );
+				} else {
+					callback( [], providedDependencies );
+				}
+			};
+
+			if ( themeSlug && ! themeItem ) { //FIXME: will only work for logged out users
+				return setThemeOnSite( addToCartAndProceed, { siteSlug }, { themeSlug } );
+			}
 
 			if ( user.get() ) {
 				return fetchSitesAndUser( siteSlug, addToCartAndProceed );
@@ -141,13 +162,5 @@ module.exports = {
 		} );
 	},
 
-	setThemeOnSite( callback, { siteSlug }, { themeSlug } ) {
-		if ( isEmpty( themeSlug ) ) {
-			return defer( callback );
-		}
-
-		wpcom.undocumented().changeTheme( siteSlug, { theme: themeSlug }, function( errors ) {
-			callback( isEmpty( errors ) ? undefined : [ errors ] );
-		} );
-	}
+	setThemeOnSite: setThemeOnSite
 };
