@@ -86,7 +86,6 @@ var Themes = React.createClass( {
 						onButtonClick={ this.onPreviewButtonClick } />
 				}
 				<ThemesSelection search={ this.props.search }
-					siteId={ false }
 					selectedSite={ false }
 					onScreenshotClick={ function( theme ) {
 						buttonOptions.preview.action( theme );
