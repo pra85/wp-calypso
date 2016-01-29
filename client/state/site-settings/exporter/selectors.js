@@ -1,3 +1,6 @@
+/**
+ * Internal dependencies
+ */
 import { States } from './constants.js';
 
 /**
@@ -7,7 +10,7 @@ import { States } from './constants.js';
  * @return {boolean}         true if activity is in progress
  */
 export function shouldShowProgress( state ) {
-	const exportingState = state.siteSettings.exporter.ui.get( 'exportingState' );
+	const exportingState = getUIState( state ).exportingState;
 
 	return ( exportingState === States.STARTING || exportingState === States.EXPORTING );
 }
