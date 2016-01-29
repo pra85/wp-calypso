@@ -101,6 +101,12 @@ function maxWidthPhotonishURL( imageURL, width ) {
 		return imageURL;
 	}
 
+	if ( ! ( endsWith( parsedURL.host, 'wp.com' ) ||
+		endsWith( parsedURL.host, 'wordpress.com' ) ||
+		endsWith( parsedURL.host, 'gravatar.com' ) ) ) {
+		return imageURL;
+	}
+
 	isGravatar = parsedURL.host.indexOf( 'gravatar.com' ) !== -1;
 
 	delete parsedURL.search;

@@ -2,7 +2,8 @@
  * External Dependencies
  */
 var photon = require( 'photon' ),
-	uri = require( 'url' );
+	uri = require( 'url' ),
+	startsWith = require( 'lodash/string/startsWith' );
 
 /**
  * Internal Dependencies
@@ -28,6 +29,10 @@ function safeImageURL( url ) {
 
 	// if it's relative, return it
 	if ( /^\/[^/]/.test( url ) ) {
+		return url;
+	}
+
+	if ( startsWith( url, 'https:' ) ) {
 		return url;
 	}
 

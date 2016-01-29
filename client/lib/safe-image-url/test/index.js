@@ -17,19 +17,31 @@ describe( 'safe-image-url', function() {
 		expect( safeImage( 'http://example.com/foo' ) ).to.eql( 'https://i1.wp.com/example.com/foo' );
 	} );
 
-	it( 'should make a non-wpcom https url safe', function() {
-		expect( safeImage( 'https://example.com/foo' ) ).to.eql( 'https://i1.wp.com/example.com/foo' );
+	it( 'should leave non-wpcom https url alone', function() {
+		expect( safeImage( 'https://example.com/foo' ) ).to.eql( 'https://example.com/foo' );
 	} );
 
 	it( 'should make wp-com like subdomain url safe', function() {
-		expect( safeImage( 'https://wordpress.com.example.com/foo' ) ).to.eql(
+		expect( safeImage( 'http://wordpress.com.example.com/foo' ) ).to.eql(
 			'https://i0.wp.com/wordpress.com.example.com/foo'
 		);
 	} );
 
+	it( 'should leave wp-com like subdomain url alone', function() {
+		expect( safeImage( 'https://wordpress.com.example.com/foo' ) ).to.eql(
+			'https://wordpress.com.example.com/foo'
+		);
+	} );
+
 	it( 'should make domain ending by wp-com url safe', function() {
-		expect( safeImage( 'https://examplewordpress.com/foo' ) ).to.eql(
+		expect( safeImage( 'http://examplewordpress.com/foo' ) ).to.eql(
 			'https://i0.wp.com/examplewordpress.com/foo'
+		);
+	} );
+
+	it( 'should leave domain ending by wp-com url alone', function() {
+		expect( safeImage( 'https://examplewordpress.com/foo' ) ).to.eql(
+			'https://examplewordpress.com/foo'
 		);
 	} );
 
@@ -58,11 +70,11 @@ describe( 'safe-image-url', function() {
 		expect( safeImage( 'https://gravatar.com/' ) ).to.eql( 'https://gravatar.com/' );
 	} );
 
-	it( 'should strip querystring args from photoned urls', function() {
-		expect( safeImage( 'https://example.com/foo?bar' ) ).to.eql( 'https://i1.wp.com/example.com/foo' );
-		expect( safeImage( 'https://example.com/foo.jpg?bar' ) ).to.eql( 'https://i0.wp.com/example.com/foo.jpg' );
-		expect( safeImage( 'https://example.com/foo.jpeg?bar' ) ).to.eql( 'https://i0.wp.com/example.com/foo.jpeg' );
-		expect( safeImage( 'https://example.com/foo.gif?bar' ) ).to.eql( 'https://i2.wp.com/example.com/foo.gif' );
-		expect( safeImage( 'https://example.com/foo.png?bar' ) ).to.eql( 'https://i0.wp.com/example.com/foo.png' );
+	it( 'should leave https urls alone', function() {
+		expect( safeImage( 'https://example.com/foo?bar' ) ).to.eql( 'https://example.com/foo?bar' );
+		expect( safeImage( 'https://example.com/foo.jpg?bar' ) ).to.eql( 'https://example.com/foo.jpg?bar' );
+		expect( safeImage( 'https://example.com/foo.jpeg?bar' ) ).to.eql( 'https://example.com/foo.jpeg?bar' );
+		expect( safeImage( 'https://example.com/foo.gif?bar' ) ).to.eql( 'https://example.com/foo.gif?bar' );
+		expect( safeImage( 'https://example.com/foo.png?bar' ) ).to.eql( 'https://example.com/foo.png?bar' );
 	} );
 } );

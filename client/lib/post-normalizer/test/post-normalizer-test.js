@@ -218,9 +218,9 @@ describe( 'post-normalizer', function() {
 				}
 			};
 			normalizer( post, [ normalizer.safeImageProperties( 200 ) ], function( err, normalized ) {
-				assert.strictEqual( normalized.author.avatar_URL, 'http://example.com/me.jpg-SAFE?w=200&quality=80&strip=info' );
-				assert.strictEqual( normalized.featured_image, 'http://foo.bar/-SAFE?w=200&quality=80&strip=info' );
-				assert.strictEqual( normalized.featured_media.uri, 'http://example.com/media.jpg-SAFE?w=200&quality=80&strip=info' );
+				assert.strictEqual( normalized.author.avatar_URL, 'http://example.com/me.jpg-SAFE' );
+				assert.strictEqual( normalized.featured_image, 'http://foo.bar/-SAFE' );
+				assert.strictEqual( normalized.featured_media.uri, 'http://example.com/media.jpg-SAFE' );
 				done( err );
 			} );
 		} );
@@ -417,13 +417,13 @@ describe( 'post-normalizer', function() {
 			);
 		} );
 
-		it( 'can route all images through photon if a size is specified', function( done ) {
+		it( 'only routes images through photon if a size is specified and the host is a photonable host', function( done ) {
 			normalizer(
 				{
-					content: '<img src="http://example.com/example.jpg"><img src="http://example.com/example2.jpg">'
+					content: '<img src="http://example.com/example.jpg"><img src="http://example.wordpress.com/example2.jpg">'
 				},
 				[ normalizer.withContentDOM( [ normalizer.content.safeContentImages( 400 ) ] ) ], function( err, normalized ) {
-					assert.equal( normalized.content, '<img src="http://example.com/example.jpg-SAFE?w=400&amp;quality=80&amp;strip=info"><img src="http://example.com/example2.jpg-SAFE?w=400&amp;quality=80&amp;strip=info">' );
+					assert.equal( normalized.content, '<img src="http://example.com/example.jpg-SAFE"><img src="http://example.wordpress.com/example2.jpg-SAFE?w=400&amp;quality=80&amp;strip=info">' );
 					done( err );
 				}
 			);
