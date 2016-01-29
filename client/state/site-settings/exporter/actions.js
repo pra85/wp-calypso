@@ -3,13 +3,14 @@
  */
 import notices from 'notices';
 import i18n from 'lib/mixins/i18n';
+import wpcom from 'lib/wp';
 
 import {
+	EXPORT_COMPLETE,
+	EXPORT_FAILURE,
+	EXPORT_START_REQUEST,
+	EXPORT_START_SUCCESS,
 	SET_EXPORT_POST_TYPE,
-	REQUEST_START_EXPORT,
-	REPLY_START_EXPORT,
-	FAIL_EXPORT,
-	COMPLETE_EXPORT
 } from 'state/action-types';
 
 /**
@@ -30,34 +31,35 @@ export function setPostType( postType ) {
  *
  * @return {Function}         Action thunk
  */
-export function startExport() {
+export function startExport( siteId ) {
 	return ( dispatch ) => {
 		dispatch( {
-			type: REQUEST_START_EXPORT
+			type: EXPORT_START_REQUEST
 		} );
 
-		// This will be replaced with an API call to start the export
-		setTimeout( () => {
-			dispatch( replyStartExport() );
+		const success =
+			() => dispatch( startSuccess( siteId ) );
 
-			// This will be replaced with polling to check when the export completes
-			setTimeout( () => {
-				dispatch( completeExport( '#', 'testing-2015-01-01.xml' ) );
-				//dispatch( failExport( 'The reason for failure would be displayed here' ) );
-			}, 1400 );
-		}, 400 );
+		const failure =
+			error => dispatch( failExport( siteId, error ) );
+
+		wpcom.undocumented()
+			.startExport( siteId )
+			.then( success )
+			.catch( failure );
 	}
 }
 
-export function replyStartExport() {
+export function startSuccess( siteId ) {
 	return {
-		type: REPLY_START_EXPORT
-	}
+		type: EXPORT_START_SUCCESS,
+		siteId
+	};
 }
 
-export function failExport( failureReason ) {
+export function failExport( siteId, error ) {
 	notices.error(
-		failureReason,
+		error,
 		{
 			button: i18n.translate( 'Get Help' ),
 			href: 'https://support.wordpress.com/'
@@ -65,11 +67,13 @@ export function failExport( failureReason ) {
 	);
 
 	return {
-		type: FAIL_EXPORT
+		type: EXPORT_FAILURE,
+		siteId,
+		error
 	}
 }
 
-export function completeExport( downloadURL ) {
+export function completeExport( siteId, downloadURL ) {
 	notices.success(
 		i18n.translate( 'Your export was successful! A download link has also been sent to your email.' ),
 		{
@@ -79,6 +83,8 @@ export function completeExport( downloadURL ) {
 	);
 
 	return {
-		type: COMPLETE_EXPORT
+		type: EXPORT_COMPLETE,
+		siteId,
+		downloadURL
 	}
 }
