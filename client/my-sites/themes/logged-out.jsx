@@ -39,15 +39,9 @@ var ThemesLoggedOut = React.createClass( {
 				action: theme => this.togglePreview( theme ),
 				hideForTheme: theme => theme.active
 			},
-			purchase: {
-				isHidden: true
-			},
-			activate: {
-				isHidden: true,
-			},
-			customize: {
-				isHidden: true
-			},
+			purchase: {},
+			activate: {},
+			customize: {},
 			separator: {
 				separator: true
 			},
@@ -60,8 +54,7 @@ var ThemesLoggedOut = React.createClass( {
 				hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
 			},
 		};
-		const options = merge( {}, buttonOptions, actionLabels );
-		return pick( options, option => ! option.isHidden );
+		return merge( {}, buttonOptions, actionLabels );
 	},
 
 	onPreviewButtonClick( theme ) {

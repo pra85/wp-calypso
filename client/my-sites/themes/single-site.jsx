@@ -57,43 +57,42 @@ var ThemesSingleSite = React.createClass( {
 	getButtonOptions: function() {
 		const { dispatch, selectedSite: site } = this.props,
 			buttonOptions = {
-				signup: {
-					isHidden: true
-				},
+				signup: {},
 				preview: {
 					action: theme => this.togglePreview( theme ),
 					hideForTheme: theme => theme.active
 				},
-				purchase: {
-					action: theme => dispatch( Action.purchase( theme, site, 'showcase' ) ),
-					isHidden: ! config.isEnabled( 'upgrades/checkout' ),
-					hideForTheme: theme => theme.active || theme.purchased || ! theme.price
-				},
+				purchase: config.isEnabled( 'upgrades/checkout' )
+					? {
+						action: theme => dispatch( Action.purchase( theme, site, 'showcase' ) ),
+						hideForTheme: theme => theme.active || theme.purchased || ! theme.price
+					}
+					: {},
 				activate: {
 					action: theme => dispatch( Action.activate( theme, site, 'showcase' ) ),
 					hideForTheme: theme => theme.active || ( theme.price && ! theme.purchased )
 				},
-				customize: {
-					action: theme => dispatch( Action.customize( theme, site ) ),
-					isHidden: ! site.isCustomizable(),
-					hideForTheme: theme => ! theme.active
-				},
+				customize: site.isCustomizable()
+					? {
+						action: theme => dispatch( Action.customize( theme, site ) ),
+						hideForTheme: theme => ! theme.active
+					}
+					: {},
 				separator: {
 					separator: true
 				},
 				details: {
 					getUrl: theme => ThemeHelpers.getDetailsUrl( theme, site ),
 				},
-				support: {
-					getUrl: theme => ThemeHelpers.getSupportUrl( theme, site ),
-					// We don't know where support docs for a given theme on a self-hosted WP install are.
-					isHidden: site.jetpack,
-					hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
-				},
+				support: site.jetpack // We don't know where support docs for a given theme on a self-hosted WP install are.
+					? {
+						getUrl: theme => ThemeHelpers.getSupportUrl( theme, site ),
+						hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
+					}
+					: {},
 			};
 
-		const options = merge( {}, buttonOptions, actionLabels );
-		return pick( options, option => ! option.isHidden );
+		return merge( {}, buttonOptions, actionLabels );
 	},
 
 	onPreviewButtonClick( theme ) {

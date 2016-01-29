@@ -20,13 +20,9 @@ var Main = require( 'components/main' ),
 	addTracking = require( './theme-options' ).addTracking,
 	actionLabels = require( './action-labels' ),
 	ThemesListSelectors = require( 'state/themes/themes-list/selectors' ),
-	getCurrentUser = require( 'state/current-user/selectors' ).getCurrentUser,
 	config = require( 'config' );
 
 var ThemesMultiSite = React.createClass( {
-	propTypes: {
-		isLoggedOut: React.PropTypes.bool.isRequired
-	},
 
 	getInitialState: function() {
 		return {
@@ -52,45 +48,39 @@ var ThemesMultiSite = React.createClass( {
 	},
 
 	getButtonOptions: function() {
-		const { isLoggedOut } = this.props,
-			buttonOptions = {
-				signup: {
-					getUrl: theme => ThemeHelpers.getSignupUrl( theme ),
-					isHidden: ! isLoggedOut
-				},
-				preview: {
-					action: theme => this.togglePreview( theme ),
-					hideForTheme: theme => theme.active
-				},
-				purchase: {
+		const buttonOptions = {
+			signup: {},
+			preview: {
+				action: theme => this.togglePreview( theme ),
+				hideForTheme: theme => theme.active
+			},
+			purchase: config.isEnabled( 'upgrades/checkout' )
+				? {
 					action: theme => this.showSiteSelectorModal( 'purchase', theme ),
-					isHidden: isLoggedOut || ! config.isEnabled( 'upgrades/checkout' ),
 					hideForTheme: theme => theme.active || theme.purchased || ! theme.price
-				},
-				activate: {
-					action: theme => this.showSiteSelectorModal( 'activate', theme ),
-					isHidden: isLoggedOut,
-					hideForTheme: theme => theme.active || ( theme.price && ! theme.purchased )
-				},
-				customize: {
-					action: theme => this.showSiteSelectorModal( 'customize', theme ),
-					isHidden: isLoggedOut,
-					hideForTheme: theme => ! theme.active
-				},
-				separator: {
-					separator: true
-				},
-				details: {
-					getUrl: theme => ThemeHelpers.getDetailsUrl( theme ),
-				},
-				support: {
-					getUrl: theme => ThemeHelpers.getSupportUrl( theme ),
-					// Free themes don't have support docs.
-					hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
-				},
-			};
-		const options = merge( {}, buttonOptions, actionLabels );
-		return pick( options, option => ! option.isHidden );
+				}
+				: {},
+			activate: {
+				action: theme => this.showSiteSelectorModal( 'activate', theme ),
+				hideForTheme: theme => theme.active || ( theme.price && ! theme.purchased )
+			},
+			customize: {
+				action: theme => this.showSiteSelectorModal( 'customize', theme ),
+				hideForTheme: theme => ! theme.active
+			},
+			separator: {
+				separator: true
+			},
+			details: {
+				getUrl: theme => ThemeHelpers.getDetailsUrl( theme ),
+			},
+			support: {
+				getUrl: theme => ThemeHelpers.getSupportUrl( theme ),
+				// Free themes don't have support docs.
+				hideForTheme: theme => ! ThemeHelpers.isPremium( theme )
+			},
+		};
+		return merge( {}, buttonOptions, actionLabels );
 	},
 
 	onPreviewButtonClick( theme ) {
@@ -151,8 +141,7 @@ export default connect(
 		props,
 		{
 			queryParams: ThemesListSelectors.getQueryParams( state ),
-			themesList: ThemesListSelectors.getThemesList( state ),
-			isLoggedOut: ! getCurrentUser( state )
+			themesList: ThemesListSelectors.getThemesList( state )
 		}
 	)
 )( ThemesMultiSite );
