@@ -1,4 +1,6 @@
 ( function() {
+	var savedWindowOnError = window.onerror;
+
 	// Props http://stackoverflow.com/a/20405830/379063
 	function stringifyErrorForUrlParams( error ) {
 		var simpleObject = {};
@@ -68,6 +70,7 @@
 		// set up handler to POST errors
 		window.onerror = debounce( function( message, scriptUrl, lineNumber, columnNumber, error ) {
 			sendErrorsToApi( message, scriptUrl, lineNumber, columnNumber, error );
+			savedWindowOnError();
 		}, 100 );
 	}
 }() );
