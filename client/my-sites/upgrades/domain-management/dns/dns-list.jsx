@@ -26,6 +26,7 @@ const DnsList = React.createClass( {
 				notices.error( error.message || this.translate( 'The DNS record has not been deleted.' ) );
 			} else {
 				const notice = notices.success( this.translate( 'The DNS record has been deleted.' ), {
+					showDismiss: false,
 					button: this.translate( 'Undo' ),
 					onClick: () => {
 						notices.removeNotice( notice );

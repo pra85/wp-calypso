@@ -96,6 +96,7 @@ const DnsAddNew = React.createClass( {
 				if ( error ) {
 					notices.error( error.message || this.translate( 'The DNS record has not been added.' ) );
 				} else {
+					notices.success( this.translate( 'The DNS record has been added.' ) );
 					this.setState( { show: true } );
 				}
 			} );
