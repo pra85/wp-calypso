@@ -77,4 +77,12 @@ module.exports = {
 		},
 		defaultVariation: 'add'
 	},
+	plansFeatureList: {
+		datestamp: '20040201', // TODO BEFORE MERGING: update this to the current date
+		variations: {
+			list: 50,
+			description: 50
+		},
+		defaultVariation: 'description'
+	}
 };
