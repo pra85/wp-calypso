@@ -138,6 +138,7 @@
 		"phone_signup": true,
 		"login": true,
 
+		"rubberband-scroll-disable": true,
 		"network-connection": true,
 		"settings/security/monitor": true,
 		"settings/security/scan": true,
