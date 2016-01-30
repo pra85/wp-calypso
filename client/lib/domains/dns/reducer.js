@@ -27,6 +27,7 @@ function addDns( state, domainName, record ) {
 
 	return update( state, {
 		[ domainName ]: {
+			isSubmittingForm: { $set: true },
 			records: { $push: [ newRecord ] }
 		}
 	} );
@@ -76,6 +77,7 @@ function getInitialStateForDomain() {
 	return {
 		isFetching: false,
 		hasLoadedFromServer: false,
+		isSubmittingForm: false,
 		records: null
 	};
 }
@@ -105,11 +107,17 @@ function reducer( state, payload ) {
 			state = addDns( state, action.domainName, action.record );
 			break;
 		case ActionTypes.DNS_ADD_COMPLETED:
+			state = updateDomainState( state, action.domainName, {
+				isSubmittingForm: false
+			} );
 			state = updateDnsState( state, action.domainName, action.record, {
 				isBeingAdded: false
 			} );
 			break;
 		case ActionTypes.DNS_ADD_FAILED:
+			state = updateDomainState( state, action.domainName, {
+				isSubmittingForm: false
+			} );
 			state = deleteDns( state, action.domainName, action.record );
 			break;
 		case ActionTypes.DNS_DELETE:
