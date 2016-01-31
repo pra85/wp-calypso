@@ -4,6 +4,7 @@
 import React, { PropTypes } from 'react';
 import PureRenderMixin from 'react-pure-render/mixin';
 import classNames from 'classnames';
+import omit from 'lodash/object/omit';
 
 /**
  * Internal dependencies
@@ -109,11 +110,52 @@ export default React.createClass( {
 		return this.isInState( appStates.MAP_AUTHORS );
 	},
 
+	/*
+	 * The progress object comes from the API and can
+	 * contain different object counts.
+	 *
+	 * The attachments will lead the progress because
+	 * they take the longest in almost all circumstances.
+	 *
+	 * progressObect ~= {
+	 *     post: { completed: 3, total: 12 },
+	 *     comment: { completed: 0, total: 3 },
+	 *     …
+	 * }
+	 */
+	calculateProgress( progressObject ) {
+		const { attachment = {} } = progressObject;
+		const sum = ( a, b ) => a + b;
+
+		if ( attachment.total > 0 && attachment.completed >= 0 ) {
+			// return a weight of 80% attachment, 20% other objects
+			return 80 * attachment.completed / attachment.total +
+			       0.2 * this.calculateProgress( omit( progressObject, [ 'attachment' ] ) );
+		}
+
+		const percentages = Object.keys( progressObject )
+			.map( k => progressObject[ k ] ) // get the inner objects themselves
+			.filter( ( { total } ) => total > 0 ) // skip ones with no objects to import
+			.map( ( { completed, total } ) => completed / total ); // compute the individual percentages
+
+		return 100 * percentages.reduce( sum, 0 ) / percentages.length;
+	},
+
+	yetToImport( progressObject ) {
+		const sum = ( a, b ) => a + b;
+
+		return Object.keys( progressObject )
+			.map( k => progressObject[ k ] )
+			.map( ( { completed, total } ) => total - completed )
+			.reduce( sum, 0 );
+	},
+
 	render: function() {
 		const { site: { ID: siteId, name: siteName, single_user_site: hasSingleAuthor } } = this.props;
 		const { importerId, errorData, customData } = this.props.importerStatus;
 		const progressClasses = classNames( 'importer__import-progress', { 'is-complete': this.isFinished() } );
-		let { percentComplete, statusMessage } = this.props.importerStatus;
+		let { percentComplete, progress, statusMessage } = this.props.importerStatus;
+		let blockingMessage;
 
 		if ( this.isError() ) {
 			statusMessage = errorData.description;
@@ -122,6 +164,20 @@ export default React.createClass( {
 		if ( this.isFinished() ) {
 			percentComplete = 100;
 			statusMessage = this.getSuccessText();
+		}
+
+		if ( this.isImporting() && progress ) {
+			const yetToImport = this.yetToImport( progress );
+			percentComplete = this.calculateProgress( progress );
+
+			blockingMessage = this.translate(
+				'Waiting on %(numResources)d resource to import.',
+				'Waiting on %(numResources)d resources to import.',
+				{
+					count: yetToImport,
+					args: { numResources: yetToImport }
+				}
+			);
 		}
 
 		return (
@@ -141,10 +197,11 @@ export default React.createClass( {
 					/>
 				}
 				{ this.isImporting() && (
-					percentComplete
+					percentComplete >= 0
 						? <ProgressBar className={ progressClasses } value={ percentComplete } />
 						: <div><Spinner className="importer__import-spinner" /><br /></div>
 				) }
+				{ blockingMessage && <div>{ blockingMessage }</div> }
 				<div><p className="importer__status-message">{ statusMessage }</p></div>
 			</div>
 		);
